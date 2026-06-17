@@ -61,7 +61,7 @@ export default clerkMiddleware(async (auth, request) => {
 // Configure proxy matcher paths
 export const config = {
   matcher: [
-    // Skip static assets and API paths except uploadthing callbacks
-    "/((?!api(?!/uploadthing)|_next/static|_next/image|favicon.ico|.*\\.svg$|.*\\.png$|.*\\.jpg$).*)",
+    // Skip static assets, but allow pages and API endpoints to be processed
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.svg$|.*\\.png$|.*\\.jpg$).*)",
   ],
 };
