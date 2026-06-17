@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { users, speakingAttempts, practiceSessions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { evaluateSpeaking, openai } from "@/lib/open-ai";
+import { checkDailyAiLimit } from "@/lib/limits";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +19,15 @@ export async function POST(req: NextRequest) {
 
     if (!userRecord) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Check daily AI limits
+    const limitCheck = await checkDailyAiLimit(userRecord.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        { error: `Daily AI token limit reached (${limitCheck.limit}/${limitCheck.limit}). Please try again tomorrow.` },
+        { status: 429 }
+      );
     }
 
     const formData = await req.formData();

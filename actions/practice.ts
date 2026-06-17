@@ -13,6 +13,7 @@ import {
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { evaluateEssay, generateWordExplanation } from "@/lib/open-ai";
+import { checkDailyAiLimit } from "@/lib/limits";
 
 // SM-2 Spaced Repetition Algorithm Helper
 function calculateSM2(
@@ -100,6 +101,20 @@ export async function reviewWordAction(progressId: string, quality: number) {
 
 // Action to fetch AI custom explanations
 export async function getAIWordExplanationAction(word: string, contextSentence: string) {
+  const { userId: clerkId } = await auth();
+  if (!clerkId) throw new Error("Unauthorized");
+
+  const userRecord = await db.query.users.findFirst({
+    where: eq(users.clerkId, clerkId),
+  });
+
+  if (!userRecord) throw new Error("User not found");
+
+  const limitCheck = await checkDailyAiLimit(userRecord.id);
+  if (!limitCheck.allowed) {
+    throw new Error(`Daily AI token limit reached (${limitCheck.limit}/${limitCheck.limit}). Please try again tomorrow.`);
+  }
+
   const explanation = await generateWordExplanation(word, contextSentence);
   return { explanation };
 }
@@ -114,6 +129,11 @@ export async function submitEssayAction(essayText: string) {
   });
 
   if (!userRecord) throw new Error("User not found");
+
+  const limitCheck = await checkDailyAiLimit(userRecord.id);
+  if (!limitCheck.allowed) {
+    throw new Error(`Daily AI token limit reached (${limitCheck.limit}/${limitCheck.limit}). Please try again tomorrow.`);
+  }
 
   // Call OpenAI API for structured grading
   const aiResult = await evaluateEssay(essayText);
