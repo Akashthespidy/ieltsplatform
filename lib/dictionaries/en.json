@@ -1,0 +1,112 @@
+{
+  "landing": {
+    "title": "Master English with LinguaTrack AI",
+    "subtitle": "An AI-powered multilingual English learning platform designed for users worldwide. Improve vocabulary, reading, writing, speaking, grammar, and listening.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "features": "Core Features",
+    "pricing": "Pricing",
+    "howItWorks": "How It Works",
+    "faq": "FAQ",
+    "ctaTitle": "Ready to unlock your true potential?",
+    "ctaSubtitle": "Join thousands of learners worldwide accelerating their English proficiency.",
+    "ctaBtn": "Start Free Trial"
+  },
+  "onboarding": {
+    "welcome": "Welcome to LinguaTrack AI",
+    "nativeLang": "Choose your native language",
+    "target": "Choose your English study goal",
+    "placementTitle": "English Placement Test",
+    "placementDesc": "Let's analyze your current level across vocabulary, reading, writing, speaking, and grammar. This will take about 5 minutes.",
+    "startPlacement": "Start Placement Test",
+    "submitting": "Evaluating your answers..."
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "overview": "Overview Dashboard",
+    "streak": "Study Streak",
+    "estimatedBand": "Estimated IELTS Band",
+    "cefrLevel": "CEFR Level",
+    "vocabGrowth": "Vocabulary Growth",
+    "dailyPlan": "AI Daily Study Plan",
+    "declineWarning": "Action Required: We noticed a recent dip in your grammar scores. Re-try the recommended exercises to strengthen this area!",
+    "noRecommendations": "Your plan is up to date! Keep up the good work."
+  },
+  "vocabulary": {
+    "title": "Spaced Repetition Word Bank",
+    "subtitle": "Master new words efficiently with the science of spaced repetition.",
+    "favorite": "Favorites",
+    "ipa": "IPA",
+    "definition": "Definition",
+    "translation": "Translation",
+    "example": "Example Sentence",
+    "translatedExample": "Translated Example",
+    "difficulty": "Difficulty",
+    "explain": "AI Explainer",
+    "explainLoading": "Asking AI...",
+    "review": "Review Word",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "nextReview": "Next review in {days} days"
+  },
+  "reading": {
+    "title": "AI Reading Assessment",
+    "passage": "Reading Passage",
+    "timer": "Time Elapsed",
+    "questions": "Comprehension Questions",
+    "submit": "Submit Reading Attempt",
+    "speed": "Reading Speed",
+    "accuracy": "Accuracy",
+    "feedback": "AI Passage Analysis"
+  },
+  "writing": {
+    "title": "AI Writing Coach",
+    "subtitle": "Submit an essay on any topic and receive detailed, inline feedback on mistakes, grammar, and structure.",
+    "placeholder": "Write or paste your essay here (minimum 150 words)...",
+    "submit": "Analyze Writing",
+    "analyzing": "Analyzing your writing...",
+    "grammar": "Grammar Score",
+    "vocabulary": "Vocabulary Score",
+    "coherence": "Coherence Score",
+    "estimatedBand": "Estimated Band",
+    "mistakes": "Detected Mistakes",
+    "improvedVersion": "AI Improved Version",
+    "studyPlan": "Writing Study Plan"
+  },
+  "speaking": {
+    "title": "AI Speaking Gym",
+    "subtitle": "Record yourself speaking and get detailed feedback on fluency, grammar, pronunciation, and vocabulary.",
+    "record": "Start Recording",
+    "stop": "Stop Recording",
+    "uploading": "Uploading audio...",
+    "evaluating": "Evaluating speech...",
+    "fluency": "Fluency Score",
+    "pronunciation": "Pronunciation Score",
+    "grammar": "Grammar Score",
+    "vocabulary": "Vocabulary Score",
+    "transcript": "Transcription",
+    "feedback": "Detailed AI Feedback"
+  },
+  "listening": {
+    "title": "Interactive Listening Practice",
+    "subtitle": "Listen to the audio clip and answer the comprehension questions. Replays are restricted to mock real exam settings.",
+    "playsRemaining": "Replays remaining: {count}",
+    "submit": "Submit Answers",
+    "score": "Listening Score",
+    "feedback": "Listening Feedback"
+  },
+  "settings": {
+    "title": "Settings & Preferences",
+    "theme": "Theme Mode",
+    "light": "Light Mode",
+    "dark": "Dark Mode",
+    "system": "System Default",
+    "language": "Interface Language",
+    "notifications": "Email Notifications",
+    "privacy": "Privacy Profile",
+    "export": "Export Data",
+    "delete": "Delete Account",
+    "save": "Save Changes"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "landing": {
+    "title": "Domina el inglés con LinguaTrack AI",
+    "subtitle": "Una plataforma multilingüe de aprendizaje de inglés impulsada por IA diseñada para usuarios de todo el mundo. Mejora vocabulario, lectura, escritura, habla, gramática y escucha.",
+    "getStarted": "Comenzar",
+    "learnMore": "Saber más",
+    "features": "Funciones Clave",
+    "pricing": "Precios",
+    "howItWorks": "Cómo Funciona",
+    "faq": "Preguntas Frecuentes",
+    "ctaTitle": "¿Listo para desbloquear tu verdadero potencial?",
+    "ctaSubtitle": "Únete a miles de estudiantes en todo el mundo que aceleran su dominio del inglés.",
+    "ctaBtn": "Comenzar Prueba Gratuita"
+  },
+  "onboarding": {
+    "welcome": "Bienvenido a LinguaTrack AI",
+    "nativeLang": "Elige tu idioma nativo",
+    "target": "Elige tu objetivo de estudio de inglés",
+    "placementTitle": "Prueba de Nivel de Inglés",
+    "placementDesc": "Analicemos tu nivel actual en vocabulario, lectura, escritura, habla y gramática. Tomará unos 5 minutos.",
+    "startPlacement": "Comenzar Prueba de Nivel",
+    "submitting": "Evaluando tus respuestas..."
+  },
+  "dashboard": {
+    "welcome": "Bienvenido de nuevo",
+    "overview": "Panel de Control General",
+    "streak": "Racha de Estudio",
+    "estimatedBand": "Banda IELTS Estimada",
+    "cefrLevel": "Nivel MCER",
+    "vocabGrowth": "Crecimiento del Vocabulario",
+    "dailyPlan": "Plan Diario de Estudio de IA",
+    "declineWarning": "Acción Requerida: Notamos una caída reciente en tus puntuaciones de gramática. ¡Vuelve a intentar los ejercicios recomendados para fortalecer esta área!",
+    "noRecommendations": "¡Tu plan de estudio está al día! Sigue así."
+  },
+  "vocabulary": {
+    "title": "Banco de Palabras por Repetición Espaciada",
+    "subtitle": "Domina nuevas palabras de manera eficiente con la ciencia de la repetición espaciada.",
+    "favorite": "Favoritos",
+    "ipa": "IPA (Pronunciación)",
+    "definition": "Definición",
+    "translation": "Traducción",
+    "example": "Frase de Ejemplo",
+    "translatedExample": "Ejemplo Traducido",
+    "difficulty": "Dificultad",
+    "explain": "Explicador de IA",
+    "explainLoading": "Preguntando a la IA...",
+    "review": "Revisar Palabra",
+    "easy": "Fácil",
+    "medium": "Medio",
+    "hard": "Difícil",
+    "nextReview": "Próxima revisión en {days} días"
+  },
+  "reading": {
+    "title": "Evaluación de Lectura de IA",
+    "passage": "Pasaje de Lectura",
+    "timer": "Tiempo Transcurrido",
+    "questions": "Preguntas de Comprensión",
+    "submit": "Enviar Intento de Lectura",
+    "speed": "Velocidad de Lectura",
+    "accuracy": "Precisión",
+    "feedback": "Análisis del Pasaje por IA"
+  },
+  "writing": {
+    "title": "Entrenador de Escritura por IA",
+    "subtitle": "Envía un ensayo sobre cualquier tema y recibe comentarios detallados sobre errores, gramática y estructura.",
+    "placeholder": "Escribe o pega tu ensayo aquí (mínimo 150 palabras)...",
+    "submit": "Analizar Escritura",
+    "analyzing": "Analizando tu escritura...",
+    "grammar": "Puntuación de Gramática",
+    "vocabulary": "Puntuación de Vocabulario",
+    "coherence": "Puntuación de Coherencia",
+    "estimatedBand": "Banda Estimada",
+    "mistakes": "Errores Detectados",
+    "improvedVersion": "Versión Mejorada por IA",
+    "studyPlan": "Plan de Estudio de Escritura"
+  },
+  "speaking": {
+    "title": "Gimnasio de Habla de IA",
+    "subtitle": "Grábate hablando y obtén comentarios detallados sobre fluidez, gramática, pronunciación y vocabulario.",
+    "record": "Iniciar Grabación",
+    "stop": "Detener Grabación",
+    "uploading": "Subiendo audio...",
+    "evaluating": "Evaluando el habla...",
+    "fluency": "Puntuación de Fluidez",
+    "pronunciation": "Puntuación de Pronunciación",
+    "grammar": "Puntuación de Gramática",
+    "vocabulary": "Puntuación de Vocabulario",
+    "transcript": "Transcripción",
+    "feedback": "Comentarios Detallados de IA"
+  },
+  "listening": {
+    "title": "Práctica de Escucha Interactiva",
+    "subtitle": "Escucha el fragmento de audio y responde a las preguntas de comprensión. Las reproducciones están limitadas para imitar las condiciones reales del examen.",
+    "playsRemaining": "Reproducciones restantes: {count}",
+    "submit": "Enviar Respuestas",
+    "score": "Puntuación de Escucha",
+    "feedback": "Comentarios de Escucha"
+  },
+  "settings": {
+    "title": "Configuración y Preferencias",
+    "theme": "Modo de Tema",
+    "light": "Modo Claro",
+    "dark": "Modo Oscuro",
+    "system": "Predeterminado del Sistema",
+    "language": "Idioma de Interfaz",
+    "notifications": "Notificaciones por Correo",
+    "privacy": "Perfil de Privacidad",
+    "export": "Exportar Datos",
+    "delete": "Eliminar Cuenta",
+    "save": "Guardar Cambios"
+  }
+}

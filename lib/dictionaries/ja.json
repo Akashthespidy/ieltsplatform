@@ -1,0 +1,112 @@
+{
+  "landing": {
+    "title": "LinguaTrack AIで英語をマスターしよう",
+    "subtitle": "世界中の学習者のために設計された、AI搭載の多言語英語学習プラットフォーム。語彙、リーディング、ライティング、スピーキング、文法、リスニング力を向上させます。",
+    "getStarted": "始める",
+    "learnMore": "詳しく知る",
+    "features": "主な機能",
+    "pricing": "料金プラン",
+    "howItWorks": "仕組み",
+    "faq": "よくある質問",
+    "ctaTitle": "あなたの真の可能性を解き放ちませんか？",
+    "ctaSubtitle": "英語力を急速に向上させている世界中の何千もの学習者に加わりましょう。",
+    "ctaBtn": "無料トライアルを開始"
+  },
+  "onboarding": {
+    "welcome": "LinguaTrack AIへようこそ",
+    "nativeLang": "母国語を選択してください",
+    "target": "英語学習の目標を選択してください",
+    "placementTitle": "実力判定テスト",
+    "placementDesc": "語彙、リーディング、ライティング、スピーキング、文法の現在のレベルを分析します。約5分かかります。",
+    "startPlacement": "判定テストを開始",
+    "submitting": "回答を評価中..."
+  },
+  "dashboard": {
+    "welcome": "おかえりなさい",
+    "overview": "ダッシュボード概要",
+    "streak": "継続日数",
+    "estimatedBand": "推定IELTSバンド",
+    "cefrLevel": "CEFRレベル",
+    "vocabGrowth": "語彙の成長",
+    "dailyPlan": "AI日替わり学習プラン",
+    "declineWarning": "要対応：最近文法のスコアが低下しているようです。この分野を強化するために推奨エクササイズをやり直してください！",
+    "noRecommendations": "学習プランは最新です！その調子で頑張りましょう。"
+  },
+  "vocabulary": {
+    "title": "間隔反復ワードバンク",
+    "subtitle": "間隔反復（スペースド・レペティション）の科学により、新しい単語を効率的に定着させます。",
+    "favorite": "お気に入り",
+    "ipa": "発音記号 (IPA)",
+    "definition": "英語の定義",
+    "translation": "翻訳",
+    "example": "例文",
+    "translatedExample": "例文の翻訳",
+    "difficulty": "難易度",
+    "explain": "AI解説",
+    "explainLoading": "AIに確認中...",
+    "review": "単語を復習する",
+    "easy": "かんたん",
+    "medium": "ふつう",
+    "hard": "むずかしい",
+    "nextReview": "{days}日後に再復習"
+  },
+  "reading": {
+    "title": "AIリーディング判定",
+    "passage": "長文テキスト",
+    "timer": "経過時間",
+    "questions": "読解問題",
+    "submit": "読解テストを提出",
+    "speed": "読書スピード",
+    "accuracy": "正解率",
+    "feedback": "AI長文分析"
+  },
+  "writing": {
+    "title": "AIライティングコーチ",
+    "subtitle": "任意のトピックでエッセイを提出すると、文法、構成、不自然な点について詳細なインラインフィードバックを受け取ることができます。",
+    "placeholder": "ここにエッセイを入力または貼り付けてください（最低150語）...",
+    "submit": "ライティングを分析",
+    "analyzing": "ライティングを分析中...",
+    "grammar": "文法スコア",
+    "vocabulary": "語彙スコア",
+    "coherence": "一貫性スコア",
+    "estimatedBand": "推定バンド",
+    "mistakes": "検出された間違い",
+    "improvedVersion": "AI改善バージョン",
+    "studyPlan": "ライティング学習プラン"
+  },
+  "speaking": {
+    "title": "AIスピーキングジム",
+    "subtitle": "自分の発話を録音して、流暢さ、文法、発音、語彙についての詳細なフィードバックを受け取ります。",
+    "record": "録音開始",
+    "stop": "録音停止",
+    "uploading": "音声をアップロード中...",
+    "evaluating": "発話を評価中...",
+    "fluency": "流暢さスコア",
+    "pronunciation": "発音スコア",
+    "grammar": "文法スコア",
+    "vocabulary": "語彙スコア",
+    "transcript": "文字起こし",
+    "feedback": "詳細なAIフィードバック"
+  },
+  "listening": {
+    "title": "インタラクティブ・リスニング練習",
+    "subtitle": "オーディオを聴いて、読解問題に答えてください。実際の試験環境を模擬するため、再生回数は制限されています。",
+    "playsRemaining": "残り再生回数: {count}",
+    "submit": "回答を提出",
+    "score": "リスニングスコア",
+    "feedback": "リスニングフィードバック"
+  },
+  "settings": {
+    "title": "設定と環境設定",
+    "theme": "テーマモード",
+    "light": "ライトモード",
+    "dark": "ダークモード",
+    "system": "システムデフォルト",
+    "language": "表示言語",
+    "notifications": "メール通知を受け取る",
+    "privacy": "プライバシー設定",
+    "export": "データをエクスポート",
+    "delete": "アカウントを削除",
+    "save": "変更を保存"
+  }
+}
