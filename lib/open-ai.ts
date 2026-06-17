@@ -107,7 +107,7 @@ export async function evaluatePlacementTest(answers: {
   }
 
   try {
-    const response = await (openai.beta as any).chat.completions.parse({
+    const response = await openai.chat.completions.parse({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -156,7 +156,7 @@ export async function evaluateEssay(essayText: string) {
   }
 
   try {
-    const response = await (openai.beta as any).chat.completions.parse({
+    const response = await openai.chat.completions.parse({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -229,7 +229,7 @@ export async function evaluateSpeaking(transcript: string) {
   }
 
   try {
-    const response = await (openai.beta as any).chat.completions.parse({
+    const response = await openai.chat.completions.parse({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -300,7 +300,7 @@ export async function generateWordDefinition(word: string) {
   }
 
   try {
-    const response = await (openai.beta as any).chat.completions.parse({
+    const response = await openai.chat.completions.parse({
       model: "gpt-4o-mini",
       messages: [
         {

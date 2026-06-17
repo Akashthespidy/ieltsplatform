@@ -225,38 +225,6 @@ export default function VocabularyClient({
                       </p>
                     </div>
 
-                    {/* Tagged Synonyms & Antonyms */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-zinc-800/60">
-                      {activeWord.synonyms && activeWord.synonyms.length > 0 && (
-                        <div className="space-y-1.5">
-                          <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                            Synonyms
-                          </h4>
-                          <div className="flex flex-wrap gap-1.5">
-                            {activeWord.synonyms.map((syn) => (
-                              <span key={syn} className="px-2 py-0.5 rounded-md bg-purple-950/40 border border-purple-500/20 text-purple-300 text-[9px] font-semibold">
-                                {syn}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {activeWord.antonyms && activeWord.antonyms.length > 0 && (
-                        <div className="space-y-1.5">
-                          <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                            Antonyms
-                          </h4>
-                          <div className="flex flex-wrap gap-1.5">
-                            {activeWord.antonyms.map((ant) => (
-                              <span key={ant} className="px-2 py-0.5 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-400 text-[9px] font-semibold">
-                                {ant}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
 
                     {/* AI Nuance Box */}
                     {aiExplanation ? (
@@ -350,79 +318,126 @@ export default function VocabularyClient({
         )}
       </div>
 
-      {/* Right Column: Searchable Word Bank Dictionary */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-zinc-300">My Word Bank</h3>
-        
-        {/* Search Error Banner */}
-        {searchError && (
-          <div className="flex items-center gap-2 p-3 bg-red-950/20 border border-red-500/30 rounded-xl text-[11px] text-red-400">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{searchError}</span>
-          </div>
-        )}
+      {/* Right Column: Search, Antonyms, Synonyms (3 Sites) */}
+      <div className="space-y-6">
+        {/* Site 1: Search & My Word Bank */}
+        <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 space-y-4 backdrop-blur">
+          <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">My Word Bank</h3>
+          
+          {/* Search Error Banner */}
+          {searchError && (
+            <div className="flex items-center gap-2 p-3 bg-red-950/20 border border-red-500/30 rounded-xl text-[11px] text-red-400">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{searchError}</span>
+            </div>
+          )}
 
-        {/* Search bar with Button */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-500" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search or learn a new word..."
-              className="w-full pl-10 pr-4 py-3 bg-zinc-900/30 border border-zinc-800 rounded-xl text-xs text-zinc-300 focus:outline-none focus:border-purple-500 transition-all"
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
-          </div>
-          <button
-            onClick={handleSearch}
-            disabled={searching || !searchQuery.trim()}
-            className="px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-all disabled:opacity-50"
-          >
-            {searching ? (
-              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              "Search"
-            )}
-          </button>
-        </div>
-
-        {displayQuery && (
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-zinc-500">Filtered by: &ldquo;{displayQuery}&rdquo;</span>
-            <button 
-              onClick={() => {
-                setDisplayQuery("");
-                setSearchQuery("");
-              }}
-              className="text-purple-400 font-bold hover:underline"
+          {/* Search bar with Button */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search or learn a new word..."
+                className="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 focus:outline-none focus:border-purple-500 transition-all"
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              disabled={searching || !searchQuery.trim()}
+              className="px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-all disabled:opacity-50"
             >
-              Clear Filter
+              {searching ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                "Search"
+              )}
             </button>
           </div>
-        )}
 
-        {/* Word lists */}
-        <div className="border border-zinc-800 rounded-2xl overflow-hidden max-h-[360px] overflow-y-auto divide-y divide-zinc-800 custom-scrollbar bg-zinc-900/10">
-          {filteredAllWords.length > 0 ? (
-            filteredAllWords.map((word) => (
-              <div key={word.word} className="p-4 hover:bg-zinc-900/30 transition-all space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-white text-sm">{word.word}</span>
-                  <span className="text-[10px] text-zinc-500 font-mono">{word.ipa}</span>
-                </div>
-                <p className="text-zinc-400 text-xs line-clamp-1">{word.englishDefinition}</p>
-                <div className="flex items-center justify-between text-[10px] pt-1">
-                  <span className="text-purple-400">{word.translatedDefinition}</span>
-                  <span className="text-zinc-600 uppercase font-semibold text-[9px]">{word.difficulty}</span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-8 text-center text-zinc-500 text-xs">
-              No matching words found.
+          {displayQuery && (
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-zinc-500">Filtered by: &ldquo;{displayQuery}&rdquo;</span>
+              <button 
+                onClick={() => {
+                  setDisplayQuery("");
+                  setSearchQuery("");
+                }}
+                className="text-purple-400 font-bold hover:underline"
+              >
+                Clear Filter
+              </button>
             </div>
+          )}
+
+          {/* Word lists */}
+          <div className="border border-zinc-800 rounded-2xl overflow-hidden max-h-[200px] overflow-y-auto divide-y divide-zinc-800 custom-scrollbar bg-zinc-950/40">
+            {filteredAllWords.length > 0 ? (
+              filteredAllWords.map((word) => (
+                <div key={word.word} className="p-3.5 hover:bg-zinc-900/30 transition-all space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-white text-xs">{word.word}</span>
+                    <span className="text-[9px] text-zinc-500 font-mono">{word.ipa}</span>
+                  </div>
+                  <p className="text-zinc-400 text-[10px] line-clamp-1">{word.englishDefinition}</p>
+                  <div className="flex items-center justify-between text-[9px] pt-0.5">
+                    <span className="text-purple-400">{word.translatedDefinition}</span>
+                    <span className="text-zinc-600 uppercase font-semibold text-[8px]">{word.difficulty}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-6 text-center text-zinc-500 text-xs">
+                No matching words found.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Site 2: Synonyms */}
+        <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 space-y-3 backdrop-blur">
+          <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Synonyms</h3>
+          {activeWord && flipped ? (
+            activeWord.synonyms && activeWord.synonyms.length > 0 ? (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {activeWord.synonyms.map((syn) => (
+                  <span key={syn} className="px-3 py-1 rounded-xl bg-purple-950/40 border border-purple-500/20 text-purple-300 text-xs font-semibold">
+                    {syn}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-zinc-500 text-xs italic">No synonyms available for this word.</p>
+            )
+          ) : (
+            <p className="text-zinc-500 text-xs italic">
+              {activeWord ? "Reveal the active card to view synonyms." : "No active card."}
+            </p>
+          )}
+        </div>
+
+        {/* Site 3: Antonyms */}
+        <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 space-y-3 backdrop-blur">
+          <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Antonyms</h3>
+          {activeWord && flipped ? (
+            activeWord.antonyms && activeWord.antonyms.length > 0 ? (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {activeWord.antonyms.map((ant) => (
+                  <span key={ant} className="px-3 py-1 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-semibold">
+                    {ant}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-zinc-500 text-xs italic">No antonyms available for this word.</p>
+            )
+          ) : (
+            <p className="text-zinc-500 text-xs italic">
+              {activeWord ? "Reveal the active card to view antonyms." : "No active card."}
+            </p>
           )}
         </div>
       </div>
