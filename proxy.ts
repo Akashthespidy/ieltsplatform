@@ -36,6 +36,14 @@ function getLocale(request: any): string {
 export default clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl;
 
+  // 0. Skip i18n redirect for API endpoints, but protect if private
+  if (pathname.startsWith("/api")) {
+    if (!isPublicRoute(request)) {
+      await auth.protect();
+    }
+    return NextResponse.next();
+  }
+
   // 1. Check if the pathname is missing any supported locale
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
