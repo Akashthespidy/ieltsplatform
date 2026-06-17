@@ -1,6 +1,6 @@
 import { getDictionary, Locale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
-import ReadingClient from "./reading-client";
+import { ReadingClient } from "@/components";
 
 // Structured static reading passages
 const passages = [

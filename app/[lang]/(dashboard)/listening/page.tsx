@@ -1,6 +1,6 @@
 import { getDictionary, Locale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
-import ListeningClient from "./listening-client";
+import { ListeningClient } from "@/components";
 
 const listeningTests = [
   {

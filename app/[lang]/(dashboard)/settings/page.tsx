@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import SettingsClient from "./settings-client";
+import { SettingsClient } from "@/components";
 
 export default async function SettingsPage({
   params,

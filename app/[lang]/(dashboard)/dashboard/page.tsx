@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { users, studyStreaks, practiceSessions, recommendations } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import DashboardClient from "./dashboard-client";
+import { DashboardClient } from "@/components";
 
 export default async function DashboardPage({
   params,

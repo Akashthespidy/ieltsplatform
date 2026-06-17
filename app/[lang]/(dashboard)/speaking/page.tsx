@@ -1,6 +1,6 @@
 import { getDictionary, Locale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
-import SpeakingClient from "./speaking-client";
+import { SpeakingClient } from "@/components";
 
 const speakingPrompts = [
   {

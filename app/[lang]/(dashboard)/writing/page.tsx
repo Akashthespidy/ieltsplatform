@@ -1,6 +1,6 @@
 import { getDictionary, Locale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
-import WritingClient from "./writing-client";
+import { WritingClient } from "@/components";
 
 const writingPrompts = [
   {

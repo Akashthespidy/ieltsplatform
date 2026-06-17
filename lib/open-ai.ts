@@ -293,3 +293,115 @@ export async function generateWordExplanation(word: string, contextSentence: str
     return `The word "${word}" is used to describe adaptability and strength in context.`;
   }
 }
+
+export async function generateWordDefinition(word: string) {
+  if (apiKey === "mock-api-key") {
+    return getMockGeneratedWord(word);
+  }
+
+  try {
+    const response = await (openai.beta as any).chat.completions.parse({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a lexicographer. Provide structured dictionary details for the word, with translation definitions and examples in bn (Bangla), ja (Japanese), es (Spanish), ar (Arabic), and fr (French).",
+        },
+        {
+          role: "user",
+          content: `Define the word: "${word}"`,
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "word_definition_generation",
+          schema: {
+            type: "object",
+            properties: {
+              word: { type: "string" },
+              ipa: { type: "string" },
+              definition: { type: "string" },
+              translatedDefinitions: {
+                type: "object",
+                properties: {
+                  bn: { type: "string" },
+                  ja: { type: "string" },
+                  es: { type: "string" },
+                  ar: { type: "string" },
+                  fr: { type: "string" }
+                },
+                required: ["bn", "ja", "es", "ar", "fr"],
+                additionalProperties: false
+              },
+              exampleSentence: { type: "string" },
+              translatedSentences: {
+                type: "object",
+                properties: {
+                  bn: { type: "string" },
+                  ja: { type: "string" },
+                  es: { type: "string" },
+                  ar: { type: "string" },
+                  fr: { type: "string" }
+                },
+                required: ["bn", "ja", "es", "ar", "fr"],
+                additionalProperties: false
+              },
+              synonyms: { type: "array", items: { type: "string" } },
+              antonyms: { type: "array", items: { type: "string" } },
+              difficulty: { type: "string", enum: ["easy", "medium", "hard"] }
+            },
+            required: [
+              "word",
+              "ipa",
+              "definition",
+              "translatedDefinitions",
+              "exampleSentence",
+              "translatedSentences",
+              "synonyms",
+              "antonyms",
+              "difficulty"
+            ],
+            additionalProperties: false
+          }
+        }
+      }
+    });
+
+    const parsed = response.choices[0].message.content;
+    if (parsed) {
+      return JSON.parse(parsed);
+    }
+    return getMockGeneratedWord(word);
+  } catch (error) {
+    console.error("OpenAI Word Generation Error:", error);
+    return getMockGeneratedWord(word);
+  }
+}
+
+function getMockGeneratedWord(word: string) {
+  return {
+    word: word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+    ipa: "/mɒk-aɪ-piː-eɪ/",
+    definition: `This is a mock definition for the word: ${word}.`,
+    translatedDefinitions: {
+      bn: "কাল্পনিক সংজ্ঞা",
+      ja: "模擬定義",
+      es: "Definición simulada",
+      ar: "تعريف وهمي",
+      fr: "Définition fictive",
+    },
+    exampleSentence: `This is a mock example sentence demonstrating the word: ${word}.`,
+    translatedSentences: {
+      bn: "এটি একটি কাল্পনিক উদাহরণ বাক্য।",
+      ja: "これは模擬例文です。",
+      es: "Esta es una frase de ejemplo simulada.",
+      ar: "هذه جملة مثال وهمية.",
+      fr: "Ceci est un exemple de phrase simulée.",
+    },
+    synonyms: ["mock-syn-1", "mock-syn-2"],
+    antonyms: ["mock-ant-1", "mock-ant-2"],
+    difficulty: "medium" as const,
+  };
+}
+

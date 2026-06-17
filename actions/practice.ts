@@ -12,7 +12,7 @@ import {
   wordBank
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { evaluateEssay, generateWordExplanation } from "@/lib/open-ai";
+import { evaluateEssay, generateWordExplanation, generateWordDefinition } from "@/lib/open-ai";
 import { checkDailyAiLimit } from "@/lib/limits";
 
 // SM-2 Spaced Repetition Algorithm Helper
@@ -117,6 +117,106 @@ export async function getAIWordExplanationAction(word: string, contextSentence: 
 
   const explanation = await generateWordExplanation(word, contextSentence);
   return { explanation };
+}
+
+export async function searchOrGenerateWordAction(searchWord: string) {
+  const { userId: clerkId } = await auth();
+  if (!clerkId) throw new Error("Unauthorized");
+
+  const userRecord = await db.query.users.findFirst({
+    where: eq(users.clerkId, clerkId),
+  });
+  if (!userRecord) throw new Error("User not found");
+
+  const normalized = searchWord.trim();
+  if (!normalized) throw new Error("Search word cannot be empty");
+
+  // 1. Check if word exists in our global wordBank
+  let wordRecord = await db.query.wordBank.findFirst({
+    where: eq(wordBank.word, normalized),
+  });
+
+  // If exact match fails, check case-insensitive match
+  if (!wordRecord) {
+    const allWords = await db.query.wordBank.findMany();
+    wordRecord = allWords.find(w => w.word.toLowerCase() === normalized.toLowerCase());
+  }
+
+  // 2. If it does not exist, check AI limit and generate it via OpenAI
+  if (!wordRecord) {
+    const limitCheck = await checkDailyAiLimit(userRecord.id);
+    if (!limitCheck.allowed) {
+      throw new Error(`Daily AI token limit reached (${limitCheck.limit}/${limitCheck.limit}). Please try again tomorrow.`);
+    }
+
+    const aiDefinition = await generateWordDefinition(normalized);
+
+    const inserted = await db.insert(wordBank).values({
+      word: aiDefinition.word,
+      ipa: aiDefinition.ipa,
+      definition: aiDefinition.definition,
+      translatedDefinitions: aiDefinition.translatedDefinitions,
+      exampleSentence: aiDefinition.exampleSentence,
+      translatedSentences: aiDefinition.translatedSentences,
+      synonyms: aiDefinition.synonyms,
+      antonyms: aiDefinition.antonyms,
+      difficulty: aiDefinition.difficulty,
+      usageFrequency: 0.5,
+    }).returning();
+
+    wordRecord = inserted[0];
+  }
+
+  // 3. Make sure it exists in user's vocabulary progress
+  let progressRecord = await db.query.vocabularyProgress.findFirst({
+    where: and(
+      eq(vocabularyProgress.userId, userRecord.id),
+      eq(vocabularyProgress.wordId, wordRecord.id)
+    )
+  });
+
+  if (!progressRecord) {
+    const insertedProg = await db.insert(vocabularyProgress).values({
+      userId: userRecord.id,
+      wordId: wordRecord.id,
+      level: 0,
+      easeFactor: 2.5,
+      interval: 0,
+      repetitions: 0,
+      nextReviewDate: new Date(),
+    }).returning();
+    progressRecord = insertedProg[0];
+  }
+
+  // Log as vocabulary practice session
+  await db.insert(practiceSessions).values({
+    userId: userRecord.id,
+    type: "vocabulary",
+    score: 100, // learning a new word
+    duration: 15,
+  });
+
+  await updateStudyStreak(userRecord.id);
+
+  // Map to frontend WordData schema matching language preferences
+  const userPrefLang = userRecord.preferredLanguage || "en";
+  const translatedDef = (wordRecord.translatedDefinitions as any)[userPrefLang] || wordRecord.definition;
+  const translatedEx = (wordRecord.translatedSentences as any)[userPrefLang] || wordRecord.exampleSentence;
+
+  return {
+    progressId: progressRecord.id,
+    word: wordRecord.word,
+    ipa: wordRecord.ipa || "",
+    englishDefinition: wordRecord.definition,
+    translatedDefinition: translatedDef,
+    englishExample: wordRecord.exampleSentence,
+    translatedExample: translatedEx,
+    synonyms: (wordRecord.synonyms as string[]) || [],
+    antonyms: (wordRecord.antonyms as string[]) || [],
+    difficulty: wordRecord.difficulty,
+    nextReviewDate: progressRecord.nextReviewDate,
+    isFavorite: progressRecord.isFavorite,
+  };
 }
 
 // Action to submit essay for writing AI evaluation

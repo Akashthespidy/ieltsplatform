@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { users, wordBank, vocabularyProgress } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import VocabularyClient from "./vocabulary-client";
+import { VocabularyClient } from "@/components";
 
 export default async function VocabularyPage({
   params,
