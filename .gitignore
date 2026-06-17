@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules
-/implementation_plan
+/implementation_plan.md
 /.pnp
 .pnp.*
 .yarn/*
