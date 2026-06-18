@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Volume2, Play, AlertCircle, CheckCircle2, RotateCcw } from "lucide-react";
+import { useAtom } from "jotai";
+import { Volume2, Play, AlertCircle, CheckCircle2, RotateCcw, Loader2 } from "lucide-react";
+import {
+  listeningActiveTestIndexAtom,
+  listeningPlaysRemainingAtom,
+  listeningAnswersAtom,
+  listeningResultAtom
+} from "@/lib/store";
 
 interface Question {
   id: string;
@@ -24,17 +31,27 @@ export default function ListeningClient({
   tests: Test[];
   dict: any;
 }) {
-  const [activeTestIndex, setActiveTestIndex] = useState(0);
-  const activeTest = tests[activeTestIndex];
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const [activeTestIndex, setActiveTestIndex] = useAtom(listeningActiveTestIndexAtom);
+  const activeTest = tests[activeTestIndex] || tests[0];
 
   // Listening states
-  const [playsRemaining, setPlaysRemaining] = useState(2);
+  const [playsRemaining, setPlaysRemaining] = useAtom(listeningPlaysRemainingAtom);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [answers, setAnswers] = useState<{ [key: string]: number }>({});
-  const [result, setResult] = useState<{
-    score: number;
-    feedback: string;
-  } | null>(null);
+  const [answers, setAnswers] = useAtom(listeningAnswersAtom);
+  const [result, setResult] = useAtom(listeningResultAtom);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   const handlePlayAudio = () => {
     if (playsRemaining <= 0) {
@@ -50,7 +67,10 @@ export default function ListeningClient({
 
       utterance.onstart = () => {
         setIsPlaying(true);
-        setPlaysRemaining((prev) => prev - 1);
+        setPlaysRemaining((prev) => {
+          const val = typeof prev === "number" ? prev : 2;
+          return val - 1;
+        });
       };
 
       utterance.onend = () => {

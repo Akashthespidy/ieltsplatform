@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { useAtom } from "jotai";
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
-import { Mic, Square, RefreshCw, Sparkles, Volume2, Award, FileText } from "lucide-react";
+import { Mic, Square, RefreshCw, Sparkles, Volume2, Award, FileText, Loader2 } from "lucide-react";
+import { speakingTranscriptAtom, speakingResultAtom } from "@/lib/store";
 
 interface Prompt {
   id: string;
@@ -25,15 +27,25 @@ export default function SpeakingClient({
   prompts: Prompt[];
   dict: any;
 }) {
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [activePromptIndex, setActivePromptIndex] = useState(0);
   const activePrompt = prompts[activePromptIndex];
 
   const { isRecording, audioBlob, recordingTime, startRecording, stopRecording } = useAudioRecorder();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{
-    transcript: string;
-    evaluation: SpeakingEvaluation;
-  } | null>(null);
+  const [result, setResult] = useAtom(speakingResultAtom) as any;
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   const handleStart = () => {
     setResult(null);

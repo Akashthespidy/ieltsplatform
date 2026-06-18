@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { updateUserSettingsSchema } from "@/lib/schemas";
 
 export async function updateUserSettingsAction(data: {
   preferredLanguage: string;
@@ -11,6 +12,7 @@ export async function updateUserSettingsAction(data: {
   timezone: string;
   country: string;
 }) {
+  const validated = updateUserSettingsSchema.parse(data);
   const { userId: clerkId } = await auth();
   if (!clerkId) throw new Error("Unauthorized");
 
@@ -21,10 +23,10 @@ export async function updateUserSettingsAction(data: {
   if (!userRecord) throw new Error("User record not found");
 
   await db.update(users).set({
-    preferredLanguage: data.preferredLanguage,
-    target: data.target,
-    timezone: data.timezone,
-    country: data.country,
+    preferredLanguage: validated.preferredLanguage,
+    target: validated.target,
+    timezone: validated.timezone,
+    country: validated.country,
     updatedAt: new Date(),
   }).where(eq(users.id, userRecord.id));
 

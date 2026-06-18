@@ -14,6 +14,14 @@ import {
 import { eq, and } from "drizzle-orm";
 import { evaluateEssay, generateWordExplanation, generateWordDefinition, generateAISuggestedWords } from "@/lib/open-ai";
 import { checkDailyAiLimit } from "@/lib/limits";
+import {
+  reviewWordSchema,
+  getAIWordExplanationSchema,
+  searchOrGenerateWordSchema,
+  submitEssaySchema,
+  saveReadingAttemptSchema,
+  markWordAsCompletedSchema
+} from "@/lib/schemas";
 
 // SM-2 Spaced Repetition Algorithm Helper
 function calculateSM2(
@@ -55,11 +63,12 @@ function calculateSM2(
 
 // Action to record spaced repetition vocabulary reviews
 export async function reviewWordAction(progressId: string, quality: number) {
+  const validated = reviewWordSchema.parse({ progressId, quality });
   const { userId: clerkId } = await auth();
   if (!clerkId) throw new Error("Unauthorized");
 
   const progressRecord = await db.query.vocabularyProgress.findFirst({
-    where: eq(vocabularyProgress.id, progressId),
+    where: eq(vocabularyProgress.id, validated.progressId),
   });
 
   if (!progressRecord) {
@@ -67,7 +76,7 @@ export async function reviewWordAction(progressId: string, quality: number) {
   }
 
   const { repetitions, easeFactor, interval } = calculateSM2(
-    quality,
+    validated.quality,
     progressRecord.repetitions,
     progressRecord.easeFactor,
     progressRecord.interval
@@ -77,19 +86,19 @@ export async function reviewWordAction(progressId: string, quality: number) {
   nextReviewDate.setDate(nextReviewDate.getDate() + interval);
 
   await db.update(vocabularyProgress).set({
-    level: quality,
+    level: validated.quality,
     repetitions,
     easeFactor,
     interval,
     nextReviewDate,
     lastReviewedDate: new Date(),
-  }).where(eq(vocabularyProgress.id, progressId));
+  }).where(eq(vocabularyProgress.id, validated.progressId));
 
   // Log a practice session
   await db.insert(practiceSessions).values({
     userId: progressRecord.userId,
     type: "vocabulary",
-    score: quality * 20, // quality 0-5 mapped to 0-100
+    score: validated.quality * 20, // quality 0-5 mapped to 0-100
     duration: 30, // estimation in seconds
   });
 
@@ -101,6 +110,7 @@ export async function reviewWordAction(progressId: string, quality: number) {
 
 // Action to fetch AI custom explanations
 export async function getAIWordExplanationAction(word: string, contextSentence: string) {
+  const validated = getAIWordExplanationSchema.parse({ word, contextSentence });
   const { userId: clerkId } = await auth();
   if (!clerkId) throw new Error("Unauthorized");
 
@@ -115,11 +125,12 @@ export async function getAIWordExplanationAction(word: string, contextSentence: 
     throw new Error(`Daily AI token limit reached (${limitCheck.limit}/${limitCheck.limit}). Please try again tomorrow.`);
   }
 
-  const explanation = await generateWordExplanation(word, contextSentence);
+  const explanation = await generateWordExplanation(validated.word, validated.contextSentence);
   return { explanation };
 }
 
 export async function searchOrGenerateWordAction(searchWord: string) {
+  const validated = searchOrGenerateWordSchema.parse({ searchWord });
   const { userId: clerkId } = await auth();
   if (!clerkId) throw new Error("Unauthorized");
 
@@ -128,7 +139,7 @@ export async function searchOrGenerateWordAction(searchWord: string) {
   });
   if (!userRecord) throw new Error("User not found");
 
-  const normalized = searchWord.trim();
+  const normalized = validated.searchWord.trim();
   if (!normalized) throw new Error("Search word cannot be empty");
 
   // 1. Check if word exists in our global wordBank
@@ -221,6 +232,7 @@ export async function searchOrGenerateWordAction(searchWord: string) {
 
 // Action to submit essay for writing AI evaluation
 export async function submitEssayAction(essayText: string) {
+  const validatedEssayText = submitEssaySchema.parse(essayText);
   const { userId: clerkId } = await auth();
   if (!clerkId) throw new Error("Unauthorized");
 
@@ -236,12 +248,12 @@ export async function submitEssayAction(essayText: string) {
   }
 
   // Call OpenAI API for structured grading
-  const aiResult = await evaluateEssay(essayText);
+  const aiResult = await evaluateEssay(validatedEssayText);
 
   // Record attempt
   const inserted = await db.insert(writingAttempts).values({
     userId: userRecord.id,
-    essayText,
+    essayText: validatedEssayText,
     grammarScore: aiResult.grammarScore,
     vocabularyScore: aiResult.vocabularyScore,
     coherenceScore: aiResult.coherenceScore,
@@ -277,6 +289,7 @@ export async function saveReadingAttemptAction(data: {
   accuracy: number;
   aiFeedback: string;
 }) {
+  const validated = saveReadingAttemptSchema.parse(data);
   const { userId: clerkId } = await auth();
   if (!clerkId) throw new Error("Unauthorized");
 
@@ -288,18 +301,18 @@ export async function saveReadingAttemptAction(data: {
 
   const inserted = await db.insert(readingAttempts).values({
     userId: userRecord.id,
-    passageId: data.passageId,
-    answers: data.answers,
-    score: data.score,
-    speed: data.speed,
-    accuracy: data.accuracy,
-    aiFeedback: data.aiFeedback,
+    passageId: validated.passageId,
+    answers: validated.answers,
+    score: validated.score,
+    speed: validated.speed,
+    accuracy: validated.accuracy,
+    aiFeedback: validated.aiFeedback,
   }).returning();
 
   await db.insert(practiceSessions).values({
     userId: userRecord.id,
     type: "reading",
-    score: data.score,
+    score: validated.score,
     duration: 300,
   });
 
@@ -524,6 +537,7 @@ export async function getSuggestedVocabularyAction() {
 }
 
 export async function markWordAsCompletedAction(progressId: string) {
+  const validated = markWordAsCompletedSchema.parse({ progressId });
   const { userId: clerkId } = await auth();
   if (!clerkId) throw new Error("Unauthorized");
 
@@ -535,7 +549,7 @@ export async function markWordAsCompletedAction(progressId: string) {
   // Update progress
   await db.update(vocabularyProgress).set({
     isCompleted: true,
-  }).where(eq(vocabularyProgress.id, progressId));
+  }).where(eq(vocabularyProgress.id, validated.progressId));
 
   // Log practice session
   await db.insert(practiceSessions).values({

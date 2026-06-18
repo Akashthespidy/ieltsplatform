@@ -1,8 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
+import { useAtom } from "jotai";
 import { reviewWordAction, getAIWordExplanationAction, searchOrGenerateWordAction, markWordAsCompletedAction } from "@/actions/practice";
 import { Sparkles, Star, Search, RefreshCw, Volume2, CheckCircle2, AlertCircle, Check, Loader2 } from "lucide-react";
+import {
+  vocabActiveTabAtom,
+  vocabCurrentIndexAtom,
+  vocabFlippedAtom,
+  vocabSelectedSuggestedWordIdAtom,
+  vocabSearchQueryAtom,
+  vocabDisplayQueryAtom,
+  vocabAiExplanationAtom
+} from "@/lib/store";
 
 interface WordData {
   progressId: string;
@@ -47,29 +57,42 @@ export default function VocabularyClient({
   suggestedWords?: SuggestedWord[];
   targetBandRange?: string;
 }) {
-  const [activeTab, setActiveTab] = useState<"suggested" | "review">("suggested");
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const [activeTab, setActiveTab] = useAtom(vocabActiveTabAtom);
   const [localWords, setLocalWords] = useState<WordData[]>(words);
   const [reviewList, setReviewList] = useState<WordData[]>(
     words.filter(w => new Date(w.nextReviewDate).getTime() <= Date.now() + 60000)
   );
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [flipped, setFlipped] = useState(false);
+  const [currentIndex, setCurrentIndex] = useAtom(vocabCurrentIndexAtom);
+  const [flipped, setFlipped] = useAtom(vocabFlippedAtom);
   
   // Suggested Vocabulary States
   const [localSuggestedWords, setLocalSuggestedWords] = useState<SuggestedWord[]>(suggestedWords);
-  const [selectedSuggestedWordId, setSelectedSuggestedWordId] = useState<string>("");
+  const [selectedSuggestedWordId, setSelectedSuggestedWordId] = useAtom(vocabSelectedSuggestedWordIdAtom);
   const [markingProgressId, setMarkingProgressId] = useState<string>("");
 
   // Search States
-  const [searchQuery, setSearchQuery] = useState("");
-  const [displayQuery, setDisplayQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useAtom(vocabSearchQueryAtom);
+  const [displayQuery, setDisplayQuery] = useAtom(vocabDisplayQueryAtom);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
 
-  const [aiExplanation, setAiExplanation] = useState("");
+  const [aiExplanation, setAiExplanation] = useAtom(vocabAiExplanationAtom);
   const [aiLoading, setAiLoading] = useState(false);
 
   const activeWord = reviewList[currentIndex];
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   // Determine active word for right panel:
   const activeRightWord = activeTab === "review"
@@ -89,7 +112,10 @@ export default function VocabularyClient({
       setAiExplanation("");
       
       if (currentIndex < reviewList.length - 1) {
-        setCurrentIndex(prev => prev + 1);
+        setCurrentIndex((prev) => {
+          const val = typeof prev === "number" ? prev : 0;
+          return val + 1;
+        });
       } else {
         // Clear finished item
         setReviewList([]);

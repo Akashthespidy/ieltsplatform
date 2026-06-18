@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { useAtom } from "jotai";
 import { submitEssayAction } from "@/actions/practice";
-import { PenTool, CheckCircle, Sparkles, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
+import { PenTool, CheckCircle, Sparkles, BookOpen, AlertCircle, RefreshCw, Loader2 } from "lucide-react";
+import { writingEssayTextAtom, writingResultAtom } from "@/lib/store";
 
 interface Prompt {
   id: string;
@@ -35,13 +37,26 @@ export default function WritingClient({
   prompts: Prompt[];
   dict: any;
 }) {
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [activePromptIndex, setActivePromptIndex] = useState(0);
   const activePrompt = prompts[activePromptIndex];
 
-  const [essayText, setEssayText] = useState("");
+  const [essayText, setEssayText] = useAtom(writingEssayTextAtom);
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<EvaluationResult | null>(null);
+  const [result, setResult] = useAtom(writingResultAtom) as any;
   const [activeMistake, setActiveMistake] = useState<Mistake | null>(null);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   const wordCount = essayText.trim() === "" ? 0 : essayText.trim().split(/\s+/).length;
 

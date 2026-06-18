@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users, studyStreaks, studyPlans, recommendations } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { evaluatePlacementTest } from "@/lib/open-ai";
+import { completeOnboardingSchema } from "@/lib/schemas";
 
 export async function completeOnboardingAction(data: {
   preferredLanguage: string;
@@ -15,6 +16,7 @@ export async function completeOnboardingAction(data: {
   writingAnswer: string;
   speakingAnswer: string;
 }) {
+  const validated = completeOnboardingSchema.parse(data);
   const { userId: clerkId } = await auth();
   if (!clerkId) {
     throw new Error("Unauthorized access");
@@ -34,9 +36,9 @@ export async function completeOnboardingAction(data: {
       clerkId,
       email,
       name,
-      preferredLanguage: data.preferredLanguage,
+      preferredLanguage: validated.preferredLanguage,
       learningLanguage: "en",
-      target: data.target,
+      target: validated.target,
       completedOnboarding: false,
     }).returning();
 
@@ -53,17 +55,17 @@ export async function completeOnboardingAction(data: {
 
   // 2. Grade the Placement Test using OpenAI API
   const aiResult = await evaluatePlacementTest({
-    vocabulary: data.vocabularyAnswer,
-    reading: data.readingAnswer,
-    grammar: data.grammarAnswer,
-    writing: data.writingAnswer,
-    speaking: data.speakingAnswer,
+    vocabulary: validated.vocabularyAnswer,
+    reading: validated.readingAnswer,
+    grammar: validated.grammarAnswer,
+    writing: validated.writingAnswer,
+    speaking: validated.speakingAnswer,
   });
 
   // 3. Update User Onboarding status
   await db.update(users).set({
-    preferredLanguage: data.preferredLanguage,
-    target: data.target,
+    preferredLanguage: validated.preferredLanguage,
+    target: validated.target,
     completedOnboarding: true,
     estimatedIeltsBand: aiResult.estimatedIeltsBand,
     cefrLevel: aiResult.cefrLevel,
@@ -84,7 +86,7 @@ export async function completeOnboardingAction(data: {
 
   await db.insert(studyPlans).values({
     userId: userRecord.id,
-    title: `Path to ${data.target}`,
+    title: `Path to ${validated.target}`,
     description: `Targeting weaknesses: ${aiResult.weaknesses.join(", ")}`,
     tasks: [
       { id: "1", label: "Complete 1 Grammar Practice Session", isCompleted: false },

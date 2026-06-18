@@ -1,8 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useAtom } from "jotai";
 import { saveReadingAttemptAction } from "@/actions/practice";
-import { Clock, CheckCircle2, AlertTriangle, ArrowRight, Play, BookOpen } from "lucide-react";
+import { Clock, CheckCircle2, AlertTriangle, ArrowRight, Play, BookOpen, Loader2 } from "lucide-react";
+import {
+  readingActivePassageIndexAtom,
+  readingTestStartedAtom,
+  readingTimerAtom,
+  readingAnswersAtom,
+  readingResultAtom
+} from "@/lib/store";
 
 interface Question {
   id: string;
@@ -27,27 +35,38 @@ export default function ReadingClient({
   passages: Passage[];
   dict: any;
 }) {
-  const [activePassageIndex, setActivePassageIndex] = useState(0);
-  const activePassage = passages[activePassageIndex];
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const [activePassageIndex, setActivePassageIndex] = useAtom(readingActivePassageIndexAtom);
+  const activePassage = passages[activePassageIndex] || passages[0];
 
   // Test states
-  const [testStarted, setTestStarted] = useState(false);
-  const [timer, setTimer] = useState(0);
-  const [answers, setAnswers] = useState<{ [key: string]: number }>({});
+  const [testStarted, setTestStarted] = useAtom(readingTestStartedAtom);
+  const [timer, setTimer] = useAtom(readingTimerAtom);
+  const [answers, setAnswers] = useAtom(readingAnswersAtom);
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{
-    score: number;
-    speed: number;
-    accuracy: number;
-    aiFeedback: string;
-  } | null>(null);
+  const [result, setResult] = useAtom(readingResultAtom);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (testStarted && !result) {
       timerIntervalRef.current = setInterval(() => {
-        setTimer((prev) => prev + 1);
+        setTimer((prev) => {
+          const val = typeof prev === "number" ? prev : 0;
+          return val + 1;
+        });
       }, 1000);
     } else {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
