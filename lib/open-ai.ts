@@ -405,3 +405,103 @@ function getMockGeneratedWord(word: string) {
   };
 }
 
+function getMockSuggestedWords(band: number, excludeWords: string[]) {
+  const words = [
+    { word: "Mitigate", ipa: "/ˈmɪt.ɪ.ɡeɪt/", definition: "Make classical problems or pain less severe.", difficulty: "medium" as const, band: band + 0.5, exampleSentence: "You can mitigate the risk by testing your code.", synonyms: ["alleviate", "reduce", "lessen"], antonyms: ["aggravate", "worsen"] },
+    { word: "Alleviate", ipa: "/əˈliː.vi.eɪt/", definition: "Make suffering or a problem less severe.", difficulty: "medium" as const, band: band + 0.2, exampleSentence: "The drug was used to alleviate pain.", synonyms: ["relieve", "ease", "assuage"], antonyms: ["intensify", "worsen"] },
+    { word: "Exacerbate", ipa: "/ɪɡˈzæs.ə.beɪt/", definition: "Make a problem or bad situation worse.", difficulty: "hard" as const, band: band + 1.2, exampleSentence: "Inflation will exacerbate the economic crisis.", synonyms: ["aggravate", "worsen", "inflame"], antonyms: ["alleviate", "soothe"] },
+    { word: "Pernicious", ipa: "/pəˈnɪʃ.əs/", definition: "Having a harmful effect, especially in a gradual or subtle way.", difficulty: "hard" as const, band: band + 1.5, exampleSentence: "The pernicious influence of the media was apparent.", synonyms: ["harmful", "damaging", "toxic"], antonyms: ["beneficial", "salutary"] },
+    { word: "Resilient", ipa: "/rɪˈzɪl.jənt/", definition: "Able to withstand or recover quickly from difficult conditions.", difficulty: "medium" as const, band: band + 0.8, exampleSentence: "Baby turtles are highly resilient.", synonyms: ["tough", "hardy", "flexible"], antonyms: ["fragile", "vulnerable"] },
+  ];
+  return {
+    words: words.filter(w => !excludeWords.includes(w.word.toLowerCase()))
+  };
+}
+
+export async function generateAISuggestedWords(band: number, excludeWords: string[]) {
+  if (apiKey === "mock-api-key") {
+    return getMockSuggestedWords(band, excludeWords);
+  }
+
+  try {
+    const response = await openai.chat.completions.parse({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert IELTS lexicographer. Generate exactly 10 to 15 unique vocabulary words that are highly relevant for a student with an IELTS band score of ${band}. The vocabulary words should target band ranges from ${band} up to ${band + 2.0}. Provide translation definitions and examples in bn (Bangla), ja (Japanese), es (Spanish), ar (Arabic), and fr (French) where applicable. Make sure none of these words are in the excluded list: ${excludeWords.join(", ")}.`
+        },
+        {
+          role: "user",
+          content: `Suggest 10 to 15 vocabulary words for IELTS target band range [${band}, ${band + 2.0}].`
+        }
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "suggested_words_generation",
+          schema: {
+            type: "object",
+            properties: {
+              words: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    word: { type: "string" },
+                    ipa: { type: "string" },
+                    definition: { type: "string" },
+                    translatedDefinitions: {
+                      type: "object",
+                      properties: {
+                        bn: { type: "string" },
+                        ja: { type: "string" },
+                        es: { type: "string" },
+                        ar: { type: "string" },
+                        fr: { type: "string" }
+                      },
+                      required: ["bn", "ja", "es", "ar", "fr"],
+                      additionalProperties: false
+                    },
+                    exampleSentence: { type: "string" },
+                    translatedSentences: {
+                      type: "object",
+                      properties: {
+                        bn: { type: "string" },
+                        ja: { type: "string" },
+                        es: { type: "string" },
+                        ar: { type: "string" },
+                        fr: { type: "string" }
+                      },
+                      required: ["bn", "ja", "es", "ar", "fr"],
+                      additionalProperties: false
+                    },
+                    synonyms: { type: "array", items: { type: "string" } },
+                    antonyms: { type: "array", items: { type: "string" } },
+                    difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
+                    band: { type: "number" }
+                  },
+                  required: ["word", "ipa", "definition", "translatedDefinitions", "exampleSentence", "translatedSentences", "synonyms", "antonyms", "difficulty", "band"],
+                  additionalProperties: false
+                }
+              }
+            },
+            required: ["words"],
+            additionalProperties: false
+          }
+        }
+      }
+    });
+
+    const parsed = response.choices[0].message.content;
+    if (parsed) {
+      return JSON.parse(parsed);
+    }
+    return getMockSuggestedWords(band, excludeWords);
+  } catch (error) {
+    console.error("OpenAI Suggested Words Generation Error:", error);
+    return getMockSuggestedWords(band, excludeWords);
+  }
+}
+
+

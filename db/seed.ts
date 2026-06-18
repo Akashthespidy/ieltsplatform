@@ -2,150 +2,201 @@ import { db } from "./index";
 import { wordBank } from "./schema";
 
 const wordsToSeed = [
-  {
-    word: "Resilient",
-    ipa: "/rɪˈzɪl.jənt/",
-    definition: "Able to recoil or spring back into shape after bending, stretching, or being compressed. Able to withstand or recover quickly from difficult conditions.",
-    translatedDefinitions: {
-      bn: "সহনশীল / স্থিতিস্থাপক",
-      ja: "回復力のある / 弾力的な",
-      es: "Resiliente / elástico",
-      ar: "مرن / قادر على التعافي",
-      fr: "Résilient / élastique"
-    },
-    exampleSentence: "She is a resilient girl who quickly recovered from the tragic loss.",
-    translatedSentences: {
-      bn: "তিনি একজন সহনশীল মেয়ে যিনি দুঃখজনক ক্ষতি থেকে দ্রুত পুনরুদ্ধার পেয়েছেন।",
-      ja: "彼女は悲劇的な喪失からすぐに立ち直った回復力のある女の子です。",
-      es: "Ella es una chica resiliente que se recuperó rápidamente de la trágica pérdida.",
-      ar: "إنها فتاة مرنة تعافت بسرعة من الخسارة المأساوية.",
-      fr: "C'est une fille résiliente qui s'est rapidement remise de cette perte tragique."
-    },
-    synonyms: ["tough", "hardy", "flexible", "adaptable"],
-    antonyms: ["fragile", "vulnerable", "weak", "rigid"],
-    difficulty: "medium",
-    usageFrequency: 0.72
-  },
-  {
-    word: "Eloquent",
-    ipa: "/ˈel.ə.kwənt/",
-    definition: "Fluent or persuasive in speaking or writing.",
-    translatedDefinitions: {
-      bn: "বাকপটু / সুবক্তা",
-      ja: "雄弁な / 流暢な",
-      es: "Elocuente",
-      ar: "فصيح / بليغ",
-      fr: "Éloquent"
-    },
-    exampleSentence: "The president gave an eloquent speech that moved the entire nation.",
-    translatedSentences: {
-      bn: "রাষ্ট্রপতি একটি বাকপটু ভাষণ দিয়েছিলেন যা পুরো জাতিকে নাড়া দিয়েছিল।",
-      ja: "大統領は国家全体を感動させる雄弁な演説を行いました。",
-      es: "El presidente dio un discurso elocuente que conmovió a toda la nación.",
-      ar: "ألقى الرئيس خطابًا بليغًا هز الأمة بأكملها.",
-      fr: "Le président a prononcé un discours éloquent qui a ému la nation entière."
-    },
-    synonyms: ["articulate", "expressive", "persuasive", "fluent"],
-    antonyms: ["inarticulate", "tongue-tied", "silent", "hesitant"],
-    difficulty: "hard",
-    usageFrequency: 0.65
-  },
-  {
-    word: "Pragmatic",
-    ipa: "/præɡˈmæt.ɪk/",
-    definition: "Dealing with things sensibly and realistically in a way that is based on practical rather than theoretical considerations.",
-    translatedDefinitions: {
-      bn: "বাস্তবধর্মী / বাস্তবমুখী",
-      ja: "実用的な / 現実的な",
-      es: "Pragmático / práctico",
-      ar: "عملي / واقعي",
-      fr: "Pragmatique / concret"
-    },
-    exampleSentence: "We need to adopt a pragmatic approach to solve this budget deficit.",
-    translatedSentences: {
-      bn: "এই বাজেট ঘাটতি সমাধান করতে আমাদের একটি বাস্তবমুখী পদ্ধতি গ্রহণ করা দরকার।",
-      ja: "この予算赤字を解決するためには、実用的なアプローチを採用する必要があります。",
-      es: "Necesitamos adoptar un enfoque pragmático para resolver este déficit presupuestario.",
-      ar: "نحن بحاجة إلى اعتماد نهج عملي لحل هذا العجز في الميزانية.",
-      fr: "Nous devons adopter une approche pragmatique pour résoudre ce déficit budgétaire."
-    },
-    synonyms: ["practical", "realistic", "logical", "sensible"],
-    antonyms: ["idealistic", "impractical", "visionary", "unrealistic"],
-    difficulty: "medium",
-    usageFrequency: 0.81
-  },
-  {
-    word: "Ubiquitous",
-    ipa: "/juːˈbɪk.wɪ.təs/",
-    definition: "Present, appearing, or found everywhere.",
-    translatedDefinitions: {
-      bn: "সর্বব্যাপী / সর্বত্র বিদ্যমান",
-      ja: "至る所にある / 偏在する",
-      es: "Ubicuo / omnipresente",
-      ar: "كلي الوجود / واسع الانتشار",
-      fr: "Omniprésent / ubiquiste"
-    },
-    exampleSentence: "Smartphones are now ubiquitous in modern society.",
-    translatedSentences: {
-      bn: "স্মার্টফোন এখন আধুনিক সমাজে সর্বব্যাপী।",
-      ja: "スマートフォンは今や現代社会の至る所にあります。",
-      es: "Los teléfonos inteligentes son ahora ubicuos en la sociedad moderna.",
-      ar: "الهواتف الذكية أصبحت الآن واسعة الانتشار في المجتمع الحديث.",
-      fr: "Les smartphones sont désormais omniprésents dans la société moderne."
-    },
-    synonyms: ["omnipresent", "everywhere", "pervasive", "universal"],
-    antonyms: ["rare", "scarce", "infrequent", "uncommon"],
-    difficulty: "hard",
-    usageFrequency: 0.58
-  },
-  {
-    word: "Pernicious",
-    ipa: "/pəˈnɪʃ.əs/",
-    definition: "Having a harmful effect, especially in a gradual or subtle way.",
-    translatedDefinitions: {
-      bn: "ক্ষতিকর / অনিষ্টকর",
-      ja: "有害な / 致命的な",
-      es: "Pernicioso / dañino",
-      ar: "خبيث / ضار",
-      fr: "Pernicieux / nocif"
-    },
-    exampleSentence: "The pernicious influence of fake news can damage democratic institutions.",
-    translatedSentences: {
-      bn: "ভুয়ো খবরের ক্ষতিকর প্রভাব গণতান্ত্রিক প্রতিষ্ঠানগুলোকে ক্ষতিগ্রস্ত করতে পারে।",
-      ja: "フェイクニュースの有害な影響は、民主主義制度を損なう可能性があります。",
-      es: "La influencia perniciosa de las noticias falsas puede dañar las instituciones democráticas.",
-      ar: "التأثير الخبيث للأخبار المزيفة يمكن أن يلحق الضرر بالمؤسسات الديمقراطية.",
-      fr: "L'influence pernicieuse des fausses nouvelles peut endommager les institutions démocratiques."
-    },
-    synonyms: ["harmful", "damaging", "destructive", "adverse"],
-    antonyms: ["beneficial", "harmless", "wholesome", "salutary"],
-    difficulty: "hard",
-    usageFrequency: 0.49
-  }
+  // Band 4.0
+  { word: "Begin", ipa: "/bɪˈɡɪn/", definition: "Start; perform the first part of an action.", difficulty: "easy", band: 4.0, exampleSentence: "We will begin the class at exactly nine o'clock.", synonyms: ["start", "commence", "initiate"], antonyms: ["end", "finish", "conclude"] },
+  { word: "Choose", ipa: "/tʃuːz/", definition: "Pick out or select someone or something as being the best or most appropriate.", difficulty: "easy", band: 4.0, exampleSentence: "You can choose any book you like from the shelf.", synonyms: ["select", "pick", "elect"], antonyms: ["reject", "refuse", "discard"] },
+  { word: "Follow", ipa: "/ˈfɒl.əʊ/", definition: "Go or come after a person or thing proceeding ahead.", difficulty: "easy", band: 4.0, exampleSentence: "Please follow the signs to reach the exit.", synonyms: ["pursue", "trail", "shadow"], antonyms: ["lead", "guide", "precede"] },
+  { word: "Finish", ipa: "/ˈfɪn.ɪʃ/", definition: "Bring a task or activity to an end.", difficulty: "easy", band: 4.0, exampleSentence: "I need to finish my homework before dinner.", synonyms: ["complete", "end", "terminate"], antonyms: ["start", "begin", "commence"] },
+  { word: "Listen", ipa: "/ˈlɪs.ən/", definition: "Give one's attention to a sound.", difficulty: "easy", band: 4.0, exampleSentence: "Listen carefully to the instructions.", synonyms: ["hear", "heed", "attend"], antonyms: ["ignore", "neglect"] },
+  { word: "Remember", ipa: "/rɪˈmem.bər/", definition: "Have in or be able to bring to one's mind an awareness of someone or something.", difficulty: "easy", band: 4.0, exampleSentence: "Remember to lock the door when you leave.", synonyms: ["recall", "recollect"], antonyms: ["forget", "overlook"] },
+  { word: "Decide", ipa: "/dɪˈsaɪd/", definition: "Come to a resolution in the mind as a result of consideration.", difficulty: "easy", band: 4.0, exampleSentence: "They decided to travel by train.", synonyms: ["determine", "resolve", "settle"], antonyms: ["hesitate", "waver"] },
+  { word: "Explain", ipa: "/ɪkˈspleɪn/", definition: "Make an idea or situation clear to someone by describing it in more detail.", difficulty: "easy", band: 4.0, exampleSentence: "Can you explain how this machine works?", synonyms: ["clarify", "describe", "elucidate"], antonyms: ["confuse", "obscure"] },
+  { word: "Listen", ipa: "/ˈlɪs.ən/", definition: "Give one's attention to a sound.", difficulty: "easy", band: 4.0, exampleSentence: "Listen to the music.", synonyms: ["hear", "heed"], antonyms: ["ignore"] },
+  { word: "Create", ipa: "/kriˈeɪt/", definition: "Bring something into existence.", difficulty: "easy", band: 4.2, exampleSentence: "Artists create beautiful paintings.", synonyms: ["produce", "generate", "make"], antonyms: ["destroy", "demolish"] },
+
+  // Band 4.5
+  { word: "Accept", ipa: "/əkˈsept/", definition: "Consent to receive or undertake something offered.", difficulty: "easy", band: 4.5, exampleSentence: "She accepted the job offer with joy.", synonyms: ["receive", "welcome", "agree"], antonyms: ["reject", "deny", "refuse"] },
+  { word: "Believe", ipa: "/bɪˈliːv/", definition: "Accept that something is true, especially without proof.", difficulty: "easy", band: 4.5, exampleSentence: "I believe that honesty is the best policy.", synonyms: ["trust", "accept", "assume"], antonyms: ["doubt", "disbelieve"] },
+  { word: "Describe", ipa: "/dɪˈskraɪb/", definition: "Give a detailed account in words of someone or something.", difficulty: "easy", band: 4.5, exampleSentence: "The witness described the suspect in detail.", synonyms: ["portray", "depict", "characterize"], antonyms: ["misrepresent"] },
+  { word: "Develop", ipa: "/dɪˈvel.əp/", definition: "Grow or cause to grow and become more mature or advanced.", difficulty: "easy", band: 4.5, exampleSentence: "The company wants to develop new software.", synonyms: ["evolve", "expand", "advance"], antonyms: ["regress", "deteriorate"] },
+  { word: "Improve", ipa: "/ɪmˈpruːv/", definition: "Make or become better.", difficulty: "easy", band: 4.5, exampleSentence: "You can improve your English by reading daily.", synonyms: ["enhance", "better", "upgrade"], antonyms: ["worsen", "damage", "impair"] },
+  { word: "Increase", ipa: "/ɪnˈkriːs/", definition: "Become or make greater in size, amount, or degree.", difficulty: "easy", band: 4.5, exampleSentence: "The temperature will increase tomorrow.", synonyms: ["grow", "rise", "multiply"], antonyms: ["decrease", "reduce", "drop"] },
+  { word: "Prepare", ipa: "/prɪˈpeər/", definition: "Make something ready for use or consideration.", difficulty: "easy", band: 4.5, exampleSentence: "She is preparing for her IELTS exam.", synonyms: ["ready", "arrange", "organize"], antonyms: ["neglect", "disorganize"] },
+  { word: "Receive", ipa: "/rɪˈsiːv/", definition: "Be given, presented with, or paid something.", difficulty: "easy", band: 4.5, exampleSentence: "I received a letter from my friend today.", synonyms: ["get", "obtain", "acquire"], antonyms: ["give", "send", "donate"] },
+  { word: "Support", ipa: "/səˈpɔːt/", definition: "Give assistance or approval to.", difficulty: "easy", band: 4.5, exampleSentence: "My family supports my decision to study abroad.", synonyms: ["assist", "help", "back"], antonyms: ["oppose", "hinder", "block"] },
+  { word: "Understand", ipa: "/ˌʌn.dəˈstænd/", definition: "Perceive the intended meaning of words or actions.", difficulty: "easy", band: 4.8, exampleSentence: "Do you understand the lesson?", synonyms: ["comprehend", "grasp", "realize"], antonyms: ["misunderstand", "ignore"] },
+
+  // Band 5.0
+  { word: "Analyze", ipa: "/ˈæn.əl.aɪz/", definition: "Examine methodically and in detail the constitution or structure of something.", difficulty: "easy", band: 5.0, exampleSentence: "We need to analyze the test results.", synonyms: ["examine", "inspect", "study"], antonyms: ["ignore", "neglect"] },
+  { word: "Benefit", ipa: "/ˈben.ɪ.fɪt/", definition: "An advantage or profit gained from something.", difficulty: "easy", band: 5.0, exampleSentence: "Regular exercise is of great benefit to health.", synonyms: ["advantage", "gain", "profit"], antonyms: ["disadvantage", "harm", "loss"] },
+  { word: "Compare", ipa: "/kəmˈpeər/", definition: "Estimate, measure, or note the similarity or dissimilarity between.", difficulty: "easy", band: 5.0, exampleSentence: "Compare the two essays carefully.", synonyms: ["contrast", "match", "parallel"], antonyms: ["ignore"] },
+  { word: "Discuss", ipa: "/dɪˈskʌs/", definition: "Talk about something with another person or group of people.", difficulty: "easy", band: 5.0, exampleSentence: "We will discuss the project details tomorrow.", synonyms: ["debate", "talk", "converse"], antonyms: ["silence", "ignore"] },
+  { word: "Identify", ipa: "/aɪˈden.tɪ.faɪ/", definition: "Establish or indicate who or what someone or something is.", difficulty: "easy", band: 5.0, exampleSentence: "She was able to identify the correct answer.", synonyms: ["recognize", "detect", "distinguish"], antonyms: ["confuse", "miss"] },
+  { word: "Require", ipa: "/rɪˈkwaɪər/", definition: "Need for a particular purpose.", difficulty: "easy", band: 5.0, exampleSentence: "The job requires excellent communication skills.", synonyms: ["need", "demand", "necessitate"], antonyms: ["obviate", "give"] },
+  { word: "Respond", ipa: "/rɪˈspɒnd/", definition: "Say something in reply or as a reaction.", difficulty: "easy", band: 5.0, exampleSentence: "Please respond to the email as soon as possible.", synonyms: ["reply", "answer", "retort"], antonyms: ["ignore", "neglect"] },
+  { word: "Source", ipa: "/sɔːs/", definition: "A place, person, or thing from which something comes or can be obtained.", difficulty: "easy", band: 5.0, exampleSentence: "The internet is a vast source of information.", synonyms: ["origin", "fountainhead", "wellspring"], antonyms: ["destination", "end"] },
+  { word: "Structure", ipa: "/ˈstrʌk.tʃər/", definition: "The arrangement of and relations between the parts or elements of something complex.", difficulty: "easy", band: 5.0, exampleSentence: "The structure of the sentence is incorrect.", synonyms: ["construction", "formation", "organization"], antonyms: ["chaos", "disorder"] },
+  { word: "Vary", ipa: "/ˈveə.ri/", definition: "Differ in size, amount, degree, or nature from something else of the same general class.", difficulty: "easy", band: 5.2, exampleSentence: "Prices vary depending on the season.", synonyms: ["differ", "fluctuate", "alter"], antonyms: ["remain", "stay", "conform"] },
+
+  // Band 5.5
+  { word: "Accumulate", ipa: "/əˈkjuː.mjə.leɪt/", definition: "Gather together or acquire an increasing number or quantity of.", difficulty: "medium", band: 5.5, exampleSentence: "Dust began to accumulate on the old books.", synonyms: ["gather", "collect", "amass"], antonyms: ["disperse", "scatter", "spend"] },
+  { word: "Acquire", ipa: "/əˈkwaɪər/", definition: "Buy or obtain an asset or object for oneself.", difficulty: "medium", band: 5.5, exampleSentence: "You can acquire new knowledge by reading.", synonyms: ["obtain", "gain", "get"], antonyms: ["lose", "surrender", "forfeit"] },
+  { word: "Coherent", ipa: "/kəʊˈhɪə.rənt/", definition: "Logical and consistent in structure.", difficulty: "medium", band: 5.5, exampleSentence: "She presented a coherent argument during the debate.", synonyms: ["logical", "rational", "consistent"], antonyms: ["incoherent", "confused", "illogical"] },
+  { word: "Evaluate", ipa: "/ɪˈvæl.ju.eɪt/", definition: "Form an idea of the amount, number, or value of; assess.", difficulty: "medium", band: 5.5, exampleSentence: "Tests are used to evaluate students' progress.", synonyms: ["assess", "appraise", "rate"], antonyms: ["ignore", "guess"] },
+  { word: "Implicit", ipa: "/ɪmˈplɪs.ɪt/", definition: "Suggested though not directly expressed.", difficulty: "medium", band: 5.5, exampleSentence: "There was an implicit agreement between the partners.", synonyms: ["implied", "tacit", "unspoken"], antonyms: ["explicit", "direct", "stated"] },
+  { word: "Inherent", ipa: "/ɪnˈhɪə.rənt/", definition: "Existing in something as a permanent, essential, or characteristic attribute.", difficulty: "medium", band: 5.5, exampleSentence: "There are inherent risks in any business venture.", synonyms: ["intrinsic", "innate", "essential"], antonyms: ["acquired", "external", "extraneous"] },
+  { word: "Innovative", ipa: "/ˈɪn.ə.və.tɪv/", definition: "Featuring new methods; advanced and original.", difficulty: "medium", band: 5.5, exampleSentence: "The company is famous for its innovative designs.", synonyms: ["original", "novel", "groundbreaking"], antonyms: ["traditional", "hackneyed", "unoriginal"] },
+  { word: "Interpret", ipa: "/ɪnˈtɜː.prɪt/", definition: "Explain the meaning of information or actions.", difficulty: "medium", band: 5.5, exampleSentence: "How do you interpret this poem?", synonyms: ["explain", "decode", "translate"], antonyms: ["misinterpret", "confuse"] },
+  { word: "Maintain", ipa: "/meɪnˈteɪn/", definition: "Cause or enable a state or situation to continue.", difficulty: "medium", band: 5.5, exampleSentence: "We must maintain good relations with our neighbors.", synonyms: ["preserve", "keep", "sustain"], antonyms: ["abandon", "neglect", "stop"] },
+  { word: "Subsequent", ipa: "/ˈsʌb.sɪ.kwənt/", definition: "Coming after something in time; following.", difficulty: "medium", band: 5.8, exampleSentence: "The subsequent events proved him right.", synonyms: ["following", "succeeding", "later"], antonyms: ["previous", "prior", "preceding"] },
+
+  // Band 6.0
+  { word: "Advocate", ipa: "/ˈæd.və.keɪt/", definition: "Publicly recommend or support a cause or policy.", difficulty: "medium", band: 6.0, exampleSentence: "Many doctors advocate a low-fat diet.", synonyms: ["recommend", "support", "champion"], antonyms: ["oppose", "criticize", "condemn"] },
+  { word: "Aggregate", ipa: "/ˈæɡ.rɪ.ɡət/", definition: "A whole formed by combining several separate elements.", difficulty: "medium", band: 6.0, exampleSentence: "The aggregate score of the two games was 4-3.", synonyms: ["total", "sum", "accumulated"], antonyms: ["individual", "single", "separate"] },
+  { word: "Ambiguous", ipa: "/æmˈbɪɡ.ju.əs/", definition: "Open to more than one interpretation; having a double meaning.", difficulty: "medium", band: 6.0, exampleSentence: "His reply was ambiguous, leaving us confused.", synonyms: ["equivocal", "unclear", "vague"], antonyms: ["clear", "unambiguous", "obvious"] },
+  { word: "Comprehensive", ipa: "/ˌkɒm.prɪˈhen.sɪv/", definition: "Including or dealing with all or nearly all elements or aspects of something.", difficulty: "medium", band: 6.0, exampleSentence: "The report offers a comprehensive review of the company's finances.", synonyms: ["inclusive", "exhaustive", "thorough"], antonyms: ["partial", "incomplete", "limited"] },
+  { word: "Empirical", ipa: "/ɪmˈpɪr.ɪ.kəl/", definition: "Based on observation or experience rather than theory or pure logic.", difficulty: "medium", band: 6.0, exampleSentence: "They provided empirical evidence to support their claim.", synonyms: ["observational", "factual", "practical"], antonyms: ["theoretical", "hypothetical", "conjectural"] },
+  { word: "Fluctuate", ipa: "/ˈflʌk.tʃu.eɪt/", definition: "Rise and fall irregularly in number or amount.", difficulty: "medium", band: 6.0, exampleSentence: "Trade figures fluctuate from month to month.", synonyms: ["vary", "waver", "vacillate"], antonyms: ["stabilize", "remain", "persist"] },
+  { word: "Hypothesis", ipa: "/haɪˈpɒθ.ə.sɪs/", definition: "A proposed explanation made on the basis of limited evidence as a starting point for further investigation.", difficulty: "medium", band: 6.0, exampleSentence: "The scientist formulated a hypothesis to explain the results.", synonyms: ["theory", "premise", "assumption"], antonyms: ["fact", "proof", "certainty"] },
+  { word: "Manipulate", ipa: "/məˈnɪp.jə.leɪt/", definition: "Handle or control a tool, mechanism, or situation in a clever or devious way.", difficulty: "medium", band: 6.0, exampleSentence: "He knows how to manipulate the media to get good publicity.", synonyms: ["influence", "exploit", "operate"], antonyms: ["leave", "neglect"] },
+  { word: "Paradigm", ipa: "/ˈpær.ə.daɪm/", definition: "A typical example or pattern of something; a model.", difficulty: "medium", band: 6.0, exampleSentence: "There is a paradigm shift in how we work due to internet.", synonyms: ["model", "pattern", "prototype"], antonyms: ["anomaly", "deviation"] },
+  { word: "Pragmatic", ipa: "/præɡˈmæt.ɪk/", definition: "Dealing with things sensibly and realistically based on practical considerations.", difficulty: "medium", band: 6.2, exampleSentence: "We need a pragmatic solution to the transport crisis.", synonyms: ["practical", "realistic", "logical"], antonyms: ["idealistic", "unrealistic", "impractical"] },
+
+  // Band 6.5
+  { word: "Acumen", ipa: "/ˈæk.jə.mən/", definition: "The ability to make good judgments and take quick decisions.", difficulty: "medium", band: 6.5, exampleSentence: "Her business acumen helped the company succeed.", synonyms: ["shrewdness", "sharpness", "wit"], antonyms: ["ignorance", "stupidity"] },
+  { word: "Aesthetic", ipa: "/esˈθet.ɪk/", definition: "Concerned with beauty or the appreciation of beauty.", difficulty: "medium", band: 6.5, exampleSentence: "The office design has great aesthetic appeal.", synonyms: ["artistic", "tasteful", "beautiful"], antonyms: ["ugly", "unattractive"] },
+  { word: "Arbitrary", ipa: "/ˈɑː.bɪ.trər.i/", definition: "Based on random choice or personal whim, rather than any system or reason.", difficulty: "medium", band: 6.5, exampleSentence: "The decision was arbitrary and unfair to the employees.", synonyms: ["random", "chance", "capricious"], antonyms: ["systematic", "reasoned", "deliberate"] },
+  { word: "Collaborate", ipa: "/kəˈlæb.ə.reɪt/", definition: "Work jointly on an activity or project.", difficulty: "medium", band: 6.5, exampleSentence: "Researchers from both universities collaborated on the study.", synonyms: ["cooperate", "unite", "conspire"], antonyms: ["work alone", "compete"] },
+  { word: "Delineate", ipa: "/dɪˈlɪn.i.eɪt/", definition: "Describe or portray something precisely.", difficulty: "medium", band: 6.5, exampleSentence: "The law clearly delineates the roles of the two bodies.", synonyms: ["outline", "depict", "specify"], antonyms: ["confuse", "distort", "blur"] },
+  { word: "Exacerbate", ipa: "/ɪɡˈzæs.ə.beɪt/", definition: "Make a problem, bad situation, or negative feeling worse.", difficulty: "medium", band: 6.5, exampleSentence: "Running will only exacerbate your knee injury.", synonyms: ["worsen", "aggravate", "inflame"], antonyms: ["alleviate", "mitigate", "ease"] },
+  { word: "Foster", ipa: "/ˈfɒs.tər/", definition: "Encourage the development of something, especially something desirable.", difficulty: "medium", band: 6.5, exampleSentence: "The teacher tried to foster a love of reading.", synonyms: ["encourage", "nurture", "promote"], antonyms: ["discourage", "suppress", "hinder"] },
+  { word: "Intricate", ipa: "/ˈɪn.trɪ.kət/", definition: "Very detailed, complicated, or complex.", difficulty: "medium", band: 6.5, exampleSentence: "The watch has an intricate mechanism.", synonyms: ["complex", "complicated", "detailed"], antonyms: ["simple", "plain", "straightforward"] },
+  { word: "Resilient", ipa: "/rɪˈzɪl.jənt/", definition: "Able to withstand or recover quickly from difficult conditions.", difficulty: "medium", band: 6.5, exampleSentence: "She is a resilient person who bounces back from failures.", synonyms: ["tough", "hardy", "flexible"], antonyms: ["fragile", "weak", "vulnerable"] },
+  { word: "Simulate", ipa: "/ˈsɪm.jə.leɪt/", definition: "Imitate the appearance or character of.", difficulty: "medium", band: 6.8, exampleSentence: "Computers can simulate space travel conditions.", synonyms: ["imitate", "replicate", "model"], antonyms: ["reveal", "be real"] },
+
+  // Band 7.0
+  { word: "Adversity", ipa: "/ədˈvɜː.sə.ti/", definition: "A state of difficulty or misfortune.", difficulty: "hard", band: 7.0, exampleSentence: "She showed great courage in the face of adversity.", synonyms: ["misfortune", "hardship", "trouble"], antonyms: ["prosperity", "fortune", "wealth"] },
+  { word: "Benevolent", ipa: "/bəˈnev.əl.ənt/", definition: "Well-meaning and kindly.", difficulty: "hard", band: 7.0, exampleSentence: "A benevolent gentleman donated a large sum of money.", synonyms: ["kind", "kindhearted", "charitable"], antonyms: ["malevolent", "spiteful", "unkind"] },
+  { word: "Cognizant", ipa: "/ˈkɒɡ.nɪ.zənt/", definition: "Having knowledge or awareness of.", difficulty: "hard", band: 7.0, exampleSentence: "We are cognizant of the challenges ahead.", synonyms: ["aware", "conscious", "mindful"], antonyms: ["ignorant", "unaware", "mindless"] },
+  { word: "Dichotomy", ipa: "/daɪˈkɒt.ə.mi/", definition: "A division or contrast between two things that are represented as being opposed or entirely different.", difficulty: "hard", band: 7.0, exampleSentence: "There is a rigid dichotomy between science and art.", synonyms: ["division", "split", "gulf"], antonyms: ["unity", "agreement", "harmony"] },
+  { word: "Eloquent", ipa: "/ˈel.ə.kwənt/", definition: "Fluent or persuasive in speaking or writing.", difficulty: "hard", band: 7.0, exampleSentence: "The speaker delivered an eloquent address.", synonyms: ["fluent", "persuasive", "articulate"], antonyms: ["inarticulate", "tongue-tied"] },
+  { word: "Furtive", ipa: "/ˈfɜː.tɪv/", definition: "Attempting to avoid notice or attention, typically because of guilt or a belief that discovery would lead to trouble.", difficulty: "hard", band: 7.0, exampleSentence: "They cast furtive glances at each other.", synonyms: ["secretive", "stealthy", "sneaky"], antonyms: ["open", "honest", "candid"] },
+  { word: "Inundate", ipa: "/ˈɪn.ʌn.deɪt/", definition: "Overwhelm someone with things or people to be dealt with; flood.", difficulty: "hard", band: 7.0, exampleSentence: "We were inundated with complaints after the broadcast.", synonyms: ["overwhelm", "swamp", "flood"], antonyms: ["drain", "dry"] },
+  { word: "Juxtapose", ipa: "/ˌdʒʌk.stəˈpəʊz/", definition: "Place or deal with close together for contrasting effect.", difficulty: "hard", band: 7.0, exampleSentence: "The gallery juxtaposes modern art with classical paintings.", synonyms: ["contrast", "compare", "place side-by-side"], antonyms: ["separate", "isolate"] },
+  { word: "Meticulous", ipa: "/məˈtɪk.jə.ləs/", definition: "Showing great attention to detail; very careful and precise.", difficulty: "hard", band: 7.0, exampleSentence: "He is meticulous about keeping his room clean.", synonyms: ["careful", "scrupulous", "painstaking"], antonyms: ["careless", "sloppy", "reckless"] },
+  { word: "Nefarious", ipa: "/nɪˈfeə.ri.əs/", definition: "Wicked, depraved, or criminal.", difficulty: "hard", band: 7.2, exampleSentence: "The nefarious plot was foiled by the detectives.", synonyms: ["wicked", "evil", "villainous"], antonyms: ["virtuous", "admirable", "righteous"] },
+
+  // Band 7.5
+  { word: "Capricious", ipa: "/kəˈprɪʃ.əs/", definition: "Given to sudden and unaccountable changes of mood or behavior.", difficulty: "hard", band: 7.5, exampleSentence: "The administration is capricious, changing rules constantly.", synonyms: ["fickle", "volatile", "unpredictable"], antonyms: ["stable", "consistent", "steady"] },
+  { word: "Deference", ipa: "/ˈdef.ər.əns/", definition: "Polite submission and respect.", difficulty: "hard", band: 7.5, exampleSentence: "He addressed the judge with absolute deference.", synonyms: ["respect", "regard", "compliance"], antonyms: ["disrespect", "defiance", "impudence"] },
+  { word: "Efficacy", ipa: "/ˈef.ɪ.kə.si/", definition: "The ability to produce a desired or intended result.", difficulty: "hard", band: 7.5, exampleSentence: "There is little doubt about the efficacy of the new medicine.", synonyms: ["effectiveness", "potency", "success"], antonyms: ["inefficacy", "failure", "weakness"] },
+  { word: "Ephemeral", ipa: "/ɪˈfem.ər.əl/", definition: "Lasting for a very short time.", difficulty: "hard", band: 7.5, exampleSentence: "Fame in the internet era is often ephemeral.", synonyms: ["transitory", "fleeting", "short-lived"], antonyms: ["permanent", "enduring", "eternal"] },
+  { word: "Gratuitous", ipa: "/ɡrəˈtʃuː.ɪ.təs/", definition: "Done without good reason; uncalled for.", difficulty: "hard", band: 7.5, exampleSentence: "The film contains too much gratuitous violence.", synonyms: ["unwarranted", "uncalled-for", "needless"], antonyms: ["necessary", "justified", "needed"] },
+  { word: "Idiosyncrasy", ipa: "/ˌɪd.i.əˈsɪŋ.krə.si/", definition: "A mode of behavior or way of thought peculiar to an individual.", difficulty: "hard", band: 7.5, exampleSentence: "One of his idiosyncrasies is that he always wears mismatched socks.", synonyms: ["eccentricity", "quirk", "mannerism"], antonyms: ["conformity", "normality"] },
+  { word: "Laconic", ipa: "/ləˈkɒn.ɪk/", definition: "Using very few words.", difficulty: "hard", band: 7.5, exampleSentence: "His laconic reply made it clear he was not interested in talking.", synonyms: ["brief", "concise", "terse"], antonyms: ["verbose", "talkative", "loquacious"] },
+  { word: "Obfuscate", ipa: "/ˈɒb.fʌs.keɪt/", definition: "Make obscure, unclear, or unintelligible.", difficulty: "hard", band: 7.5, exampleSentence: "He tried to obfuscate the truth with long, complicated explanations.", synonyms: ["obscure", "blur", "muddle"], antonyms: ["clarify", "elucidate", "explain"] },
+  { word: "Pernicious", ipa: "/pəˈnɪʃ.əs/", definition: "Having a harmful effect, especially in a gradual or subtle way.", difficulty: "hard", band: 7.5, exampleSentence: "The pernicious news spread quickly across social media.", synonyms: ["harmful", "damaging", "toxic"], antonyms: ["beneficial", "harmless", "wholesome"] },
+  { word: "Superfluous", ipa: "/suːˈpɜː.flu.əs/", definition: "Unnecessary, especially through being more than enough.", difficulty: "hard", band: 7.8, exampleSentence: "Avoid using superfluous words in your essays.", synonyms: ["redundant", "excess", "surplus"], antonyms: ["necessary", "essential", "needed"] },
+
+  // Band 8.0
+  { word: "Anachronism", ipa: "/əˈnæk.rə.nɪ.zəm/", definition: "A thing belonging or appropriate to a period other than that in which it exists.", difficulty: "hard", band: 8.0, exampleSentence: "The use of typewriter in a modern office is an anachronism.", synonyms: ["misplacement", "incongruity"], antonyms: ["conformity"] },
+  { word: "Cacophony", ipa: "/kəˈkɒf.ə.ni/", definition: "A harsh, discordant mixture of sounds.", difficulty: "hard", band: 8.0, exampleSentence: "The cacophony of car horns in the traffic jam was deafening.", synonyms: ["din", "racket", "noise"], antonyms: ["harmony", "silence", "melody"] },
+  { word: "Enervate", ipa: "/ˈen.ə.veɪt/", definition: "Make someone feel drained of energy or vitality; weaken.", difficulty: "hard", band: 8.0, exampleSentence: "The intense summer heat can enervate even the strongest people.", synonyms: ["exhaust", "weary", "drain"], antonyms: ["energize", "strengthen", "invigorate"] },
+  { word: "Esoteric", ipa: "/ˌes.əˈter.ɪk/", definition: "Intended for or likely to be understood by only a small number of people with a specialized knowledge.", difficulty: "hard", band: 8.0, exampleSentence: "The professor conducted research in esoteric physics.", synonyms: ["obscure", "mysterious", "abstruse"], antonyms: ["common", "popular", "accessible"] },
+  { word: "Loquacious", ipa: "/ləʊˈkweɪ.ʃəs/", definition: "Tending to talk a great deal; talkative.", difficulty: "hard", band: 8.0, exampleSentence: "She is a loquacious student who loves class discussions.", synonyms: ["talkative", "garrulous", "chatty"], antonyms: ["taciturn", "silent", "quiet"] },
+  { word: "Ostentatious", ipa: "/ˌɒs.tenˈteɪ.ʃəs/", definition: "Designed to impress or attract notice; showy.", difficulty: "hard", band: 8.0, exampleSentence: "They live in an ostentatious mansion with gold-plated doors.", synonyms: ["showy", "pretentious", "gaudy"], antonyms: ["modest", "plain", "simple"] },
+  { word: "Recalcitrant", ipa: "/rɪˈkæl.sɪ.trənt/", definition: "Having an obstinately uncooperative attitude toward authority.", difficulty: "hard", band: 8.0, exampleSentence: "The recalcitrant student refused to follow class rules.", synonyms: ["unruly", "defiant", "disobedient"], antonyms: ["obedient", "compliant", "cooperative"] },
+  { word: "Sycophant", ipa: "/ˈsɪk.ə.fænt/", definition: "A person who acts obsequiously toward someone important in order to gain advantage.", difficulty: "hard", band: 8.0, exampleSentence: "The manager was surrounded by sycophants who praised his every word.", synonyms: ["flatterer", "yes-man", "bootlicker"], antonyms: ["critic", "detractor"] },
+  { word: "Ubiquitous", ipa: "/juːˈbɪk.wɪ.təs/", definition: "Present, appearing, or found everywhere.", difficulty: "hard", band: 8.0, exampleSentence: "Computers are ubiquitous in modern offices.", synonyms: ["omnipresent", "pervasive", "universal"], antonyms: ["rare", "scarce", "infrequent"] },
+  { word: "Pernicious", ipa: "/pəˈnɪʃ.əs/", definition: "Gradually harmful.", difficulty: "hard", band: 8.2, exampleSentence: "Pernicious effects of pollution.", synonyms: ["harmful"], antonyms: ["helpful"] },
+
+  // Additional vocabulary items to reach 100 words in DB
+  { word: "Venerable", ipa: "/ˈven.ər.ə.bəl/", definition: "Accorded a great deal of respect, especially because of age, wisdom, or character.", difficulty: "hard", band: 7.2, exampleSentence: "A venerable elder of the village was invited.", synonyms: ["respected", "revered", "hallowed"], antonyms: ["dishonorable", "despised"] },
+  { word: "Vindicate", ipa: "/ˈvɪn.dɪ.keɪt/", definition: "Clear someone of blame or suspicion.", difficulty: "medium", band: 6.8, exampleSentence: "Newly discovered evidence will vindicate the suspect.", synonyms: ["exonerate", "absolve", "clear"], antonyms: ["convict", "blame"] },
+  { word: "Wary", ipa: "/ˈweə.ri/", definition: "Feeling or showing caution about possible dangers.", difficulty: "medium", band: 5.8, exampleSentence: "She was wary of strangers approaching her.", synonyms: ["cautious", "careful", "alert"], antonyms: ["foolhardy", "trusting", "careless"] },
+  { word: "Zealous", ipa: "/ˈzel.əs/", definition: "Having or showing zeal.", difficulty: "medium", band: 6.2, exampleSentence: "A zealous supporter of the charity team.", synonyms: ["enthusiastic", "passionate", "eager"], antonyms: ["apathetic", "indifferent"] },
+  { word: "Alleviate", ipa: "/əˈliː.vi.eɪt/", definition: "Make suffering or a problem less severe.", difficulty: "medium", band: 6.0, exampleSentence: "Take aspirin to alleviate the headache.", synonyms: ["relieve", "ease", "mitigate"], antonyms: ["worsen", "aggravate"] },
+  { word: "Allude", ipa: "/əˈluːd/", definition: "Suggest or call attention to indirectly; hint at.", difficulty: "medium", band: 6.4, exampleSentence: "He alluded to his past struggles during the speech.", synonyms: ["hint", "imply", "suggest"], antonyms: ["declare", "state directly"] },
+  { word: "Altruistic", ipa: "/ˌæl.truˈɪs.tɪk/", definition: "Showing a disinterested and selfless concern for the well-being of others.", difficulty: "medium", band: 6.6, exampleSentence: "Her altruistic work in slums inspired many.", synonyms: ["selfless", "charitable", "philantic"], antonyms: ["selfish", "greedy"] },
+  { word: "Animosity", ipa: "/ˌæn.ɪˈmɒs.ə.ti/", definition: "Strong hostility.", difficulty: "medium", band: 6.2, exampleSentence: "There is no animosity between the two former rivals.", synonyms: ["hostility", "friction", "antipathy"], antonyms: ["friendship", "goodwill"] },
+  { word: "Apathy", ipa: "/ˈæp.ə.θi/", definition: "Lack of interest, enthusiasm, or concern.", difficulty: "medium", band: 5.8, exampleSentence: "There is general voter apathy in local elections.", synonyms: ["indifference", "lethargy", "coolness"], antonyms: ["passion", "enthusiasm"] },
+  { word: "Arduous", ipa: "/ˈɑː.dʒu.əs/", definition: "Involving or requiring strenuous effort; difficult and tiring.", difficulty: "hard", band: 6.8, exampleSentence: "Climbing Mount Everest is an arduous task.", synonyms: ["taxing", "grueling", "hard"], antonyms: ["easy", "effortless"] },
+  { word: "Assuage", ipa: "/əˈsweɪdʒ/", definition: "Make an unpleasant feeling less intense.", difficulty: "hard", band: 7.0, exampleSentence: "She did her best to assuage his grief.", synonyms: ["relieve", "soothe", "calm"], antonyms: ["aggravate", "intensify"] },
+  { word: "Audacious", ipa: "/ɔːˈdeɪ.ʃəs/", definition: "Showing a willingness to take surprisingly bold risks.", difficulty: "hard", band: 7.4, exampleSentence: "An audacious plan to rob the central bank.", synonyms: ["bold", "daring", "fearless"], antonyms: ["timid", "cautious"] },
+  { word: "Austere", ipa: "/ɒˈstɪər/", definition: "Severe or strict in manner, attitude, or appearance.", difficulty: "hard", band: 7.2, exampleSentence: "He lived an austere life in the monastery.", synonyms: ["strict", "stern", "simple"], antonyms: ["luxurious", "indulgent"] },
+  { word: "Avarice", ipa: "/ˈæv.ər.ɪs/", definition: "Extreme greed for wealth or material gain.", difficulty: "hard", band: 7.8, exampleSentence: "His avarice drove him to commit financial fraud.", synonyms: ["greed", "cupidity", "rapacity"], antonyms: ["generosity", "altruism"] },
+  { word: "Banal", ipa: "/bəˈnɑːl/", definition: "So lacking in originality as to be obvious and boring.", difficulty: "medium", band: 6.4, exampleSentence: "The movie was filled with banal dialogue.", synonyms: ["cliché", "trite", "hackneyed"], antonyms: ["original", "fresh", "novel"] },
+  { word: "Bolster", ipa: "/ˈbəʊl.stər/", definition: "Support or strengthen; prop up.", difficulty: "medium", band: 5.6, exampleSentence: "She used details to bolster her thesis.", synonyms: ["strengthen", "support", "reinforce"], antonyms: ["weaken", "undermine"] },
+  { word: "Bombastic", ipa: "/bɒmˈbæs.tɪk/", definition: "High-sounding but with little meaning; inflated.", difficulty: "hard", band: 7.6, exampleSentence: "His bombastic rhetoric was ignored by the public.", synonyms: ["pompous", "inflated", "turgid"], antonyms: ["simple", "plain", "straightforward"] },
+  { word: "Candid", ipa: "/ˈkæn.dɪd/", definition: "Truthful and straightforward; frank.", difficulty: "medium", band: 5.4, exampleSentence: "The politician gave a candid response to the journalist.", synonyms: ["frank", "honest", "truthful"], antonyms: ["secretive", "insincere"] },
+  { word: "Castigate", ipa: "/ˈkæs.tɪ.ɡeɪt/", definition: "Reprimand someone severely.", difficulty: "hard", band: 7.4, exampleSentence: "The chief castigated the officer for negligence.", synonyms: ["scold", "reprimand", "censure"], antonyms: ["praise", "commend"] },
+  { word: "Chicanery", ipa: "/ʃɪˈkeɪ.nər.i/", definition: "The use of trickery to achieve a financial, legal, or political purpose.", difficulty: "hard", band: 8.2, exampleSentence: "Political chicanery behind closed doors.", synonyms: ["trickery", "deception", "duplicity"], antonyms: ["honesty", "openness"] },
+  { word: "Coalesce", ipa: "/ˌkəʊ.əˈles/", definition: "Come together to form one mass or whole.", difficulty: "medium", band: 6.8, exampleSentence: "The puddles coalesced into a single stream.", synonyms: ["merge", "unite", "fuse"], antonyms: ["separate", "divide"] },
+  { word: "Compendium", ipa: "/kəmˈpen.di.əm/", definition: "A collection of concise but detailed information about a particular subject.", difficulty: "medium", band: 6.6, exampleSentence: "A compendium of vocabulary terms for IELTS.", synonyms: ["anthology", "collection", "digest"], antonyms: ["expansion"] },
+  { word: "Condone", ipa: "/kənˈdəʊn/", definition: "Accept and allow behavior that is considered morally wrong or offensive to continue.", difficulty: "medium", band: 6.2, exampleSentence: "We cannot condone physical violence.", synonyms: ["excuse", "forgive", "allow"], antonyms: ["condemn", "forbid"] },
+  { word: "Confound", ipa: "/kənˈfaʊnd/", definition: "Cause surprise or confusion in someone, especially by acting against their expectations.", difficulty: "medium", band: 6.4, exampleSentence: "The results confound standard theories.", synonyms: ["confuse", "baffle", "perplex"], antonyms: ["clarify", "explain"] },
+  { word: "Connoisseur", ipa: "/ˌkɒn.əˈsɜː/", definition: "An expert judge in matters of taste.", difficulty: "hard", band: 7.8, exampleSentence: "He is a connoisseur of classical music.", synonyms: ["expert", "authority", "specialist"], antonyms: ["novice", "ignoramus"] },
+  { word: "Decorum", ipa: "/dɪˈkɔː.rəm/", definition: "Behavior in keeping with good taste and propriety.", difficulty: "medium", band: 6.6, exampleSentence: "Please maintain decorum inside the court room.", synonyms: ["propriety", "dignity", "politeness"], antonyms: ["impropriety", "rudeness"] },
+  { word: "Deplore", ipa: "/dɪˈplɔː/", definition: "Feel or express strong disapproval of.", difficulty: "medium", band: 6.2, exampleSentence: "We deplore the use of child labor.", synonyms: ["condemn", "denounce", "regret"], antonyms: ["approve", "applaud"] },
+  { word: "Desultory", ipa: "/ˈdes.əl.tər.i/", definition: "Lacking a plan, purpose, or enthusiasm.", difficulty: "hard", band: 7.6, exampleSentence: "He read in a desultory fashion, skipping pages.", synonyms: ["random", "aimless", "haphazard"], antonyms: ["methodical", "systematic"] },
+  { word: "Diatribe", ipa: "/ˈdaɪ.ə.traɪb/", definition: "A forceful and bitter verbal attack against someone or something.", difficulty: "hard", band: 7.8, exampleSentence: "The customer launched into a diatribe against the clerk.", synonyms: ["tirade", "onslaught", "harangue"], antonyms: ["praise", "encomium"] },
+  { word: "Diffident", ipa: "/ˈdɪf.ɪ.dənt/", definition: "Modest or shy because of a lack of self-confidence.", difficulty: "medium", band: 6.8, exampleSentence: "A diffident youth who spoke softly.", synonyms: ["shy", "bashful", "modest"], antonyms: ["confident", "bold"] },
+  { word: "Disabuse", ipa: "/ˌdɪs.əˈbjuːz/", definition: "Persuade someone that an idea or belief is mistaken.", difficulty: "hard", band: 7.6, exampleSentence: "Let me disabuse you of the notion that it is easy.", synonyms: ["undeceive", "correct", "enlighten"], antonyms: ["deceive", "mislead"] },
+  { word: "Discrepancy", ipa: "/dɪsˈkrep.ən.si/", definition: "An illogical lack of compatibility or similarity between two or more facts.", difficulty: "medium", band: 6.0, exampleSentence: "There is a discrepancy in the accounts.", synonyms: ["inconsistency", "variance", "difference"], antonyms: ["consistency", "similarity"] },
+  { word: "Disinterested", ipa: "/dɪsˈɪn.trəs.tɪd/", definition: "Not influenced by considerations of personal advantage; unbiased.", difficulty: "hard", band: 7.2, exampleSentence: "A disinterested third party should arbitrate.", synonyms: ["unbiased", "impartial", "neutral"], antonyms: ["biased", "partial", "interested"] },
+  { word: "Disparage", ipa: "/dɪˈspær.ɪdʒ/", definition: "Regard or represent as being of little worth.", difficulty: "medium", band: 6.6, exampleSentence: "Do not disparage his efforts.", synonyms: ["belittle", "undervalue", "deprecate"], antonyms: ["praise", "extol", "commend"] },
+  { word: "Disseminate", ipa: "/dɪˈsem.ɪ.neɪt/", definition: "Spread information or ideas widely.", difficulty: "medium", band: 6.4, exampleSentence: "Social networks disseminate news instantly.", synonyms: ["spread", "circulate", "distribute"], antonyms: ["collect", "gather", "hide"] },
+  { word: "Dogmatic", ipa: "/dɒɡˈmæt.ɪk/", definition: "Inclined to lay down principles as undeniably true.", difficulty: "hard", band: 7.2, exampleSentence: "She was dogmatic about her teaching methods.", synonyms: ["opinionated", "assertive", "imperious"], antonyms: ["flexible", "open-minded"] },
+  { word: "Duplicity", ipa: "/dʒuːˈplɪs.ə.ti/", definition: "Deceitfulness; double-dealing.", difficulty: "hard", band: 7.6, exampleSentence: "A story of financial duplicity and betrayal.", synonyms: ["deceit", "treachery", "fraud"], antonyms: ["honesty", "sincerity"] },
+  { word: "Eclectic", ipa: "/ekˈlek.tɪk/", definition: "Deriving ideas, style, or taste from a broad and diverse range of sources.", difficulty: "medium", band: 6.8, exampleSentence: "The museum holds an eclectic collection of items.", synonyms: ["diverse", "varied", "wide"], antonyms: ["narrow", "specialized"] },
+  { word: "Enigma", ipa: "/ɪˈnɪɡ.mə/", definition: "A person or thing that is mysterious, puzzling, or difficult to understand.", difficulty: "medium", band: 6.6, exampleSentence: "His sudden disappearance remains an enigma.", synonyms: ["mystery", "puzzle", "riddle"], antonyms: ["explanation", "clarity"] },
+  { word: "Equivocal", ipa: "/ɪˈkwɪv.ə.kəl/", definition: "Open to more than one interpretation; ambiguous.", difficulty: "hard", band: 7.2, exampleSentence: "The evidence remains equivocal.", synonyms: ["ambiguous", "vague", "unclear"], antonyms: ["unequivocal", "clear", "obvious"] },
+  { word: "Erudite", ipa: "/ˈer.ʊ.daɪt/", definition: "Having or showing great knowledge or learning.", difficulty: "hard", band: 7.4, exampleSentence: "The erudite scholar wrote several reference books.", synonyms: ["scholarly", "learned", "educated"], antonyms: ["ignorant", "uneducated"] },
+  { word: "Eschew", ipa: "/ɪsˈtʃuː/", definition: "Deliberately avoid using; abstain from.", difficulty: "hard", band: 7.6, exampleSentence: "A good writer should eschew redundant words.", synonyms: ["avoid", "shun", "abstain"], antonyms: ["embrace", "welcome", "indulge"] },
+  { word: "Exculpate", ipa: "/ˈek.skʌl.peɪt/", definition: "Show or declare that someone is not guilty of wrongdoing.", difficulty: "hard", band: 7.8, exampleSentence: "The lawyer struggled to exculpate his client.", synonyms: ["exonerate", "acquit", "clear"], antonyms: ["convict", "charge"] },
+  { word: "Exigent", ipa: "/ˈek.sɪ.dʒənt/", definition: "Pressing; demanding.", difficulty: "hard", band: 8.0, exampleSentence: "The exigent demands of a high-pressure office.", synonyms: ["demanding", "urgent", "pressing"], antonyms: ["easy", "trivial"] },
+  { word: "Garrulous", ipa: "/ˈɡær.əl.əs/", definition: "Excessively talkative, especially on trivial matters.", difficulty: "hard", band: 7.4, exampleSentence: "The garrulous old man told long stories.", synonyms: ["loquacious", "talkative"], antonyms: ["taciturn", "silent"] },
+  { word: "Gullible", ipa: "/ˈɡʌl.ə.bəl/", definition: "Easily persuaded to believe something; credulous.", difficulty: "easy", band: 5.4, exampleSentence: "Gullible consumers believe fake advertisements.", synonyms: ["naive", "trusting", "credulous"], antonyms: ["skeptical", "wary"] },
+  { word: "Homogeneous", ipa: "/ˌhɒm.əˈdʒiː.ni.əs/", definition: "Of the same kind; alike.", difficulty: "medium", band: 6.4, exampleSentence: "A homogeneous population in rural areas.", synonyms: ["uniform", "identical", "alike"], antonyms: ["heterogeneous", "diverse"] },
+  { word: "Hyperbole", ipa: "/haɪˈpɜː.bəl.i/", definition: "Exaggerated statements or claims not meant to be taken literally.", difficulty: "medium", band: 6.8, exampleSentence: "He used hyperbole to make his story sound exciting.", synonyms: ["exaggeration", "overstatement"], antonyms: ["understatement"] },
+  { word: "Iconoclast", ipa: "/aɪˈkɒn.ə.klæst/", definition: "A person who attacks cherished beliefs or institutions.", difficulty: "hard", band: 7.8, exampleSentence: "An iconoclast filmmaker who broke traditional rules.", synonyms: ["rebel", "dissident", "maverick"], antonyms: ["conformist"] },
+  { word: "Imminent", ipa: "/ˈɪm.ɪ.nənt/", definition: "About to happen.", difficulty: "medium", band: 5.8, exampleSentence: "Dark clouds indicate that rain is imminent.", synonyms: ["impending", "looming", "near"], antonyms: ["distant", "future"] }
 ];
 
 async function main() {
-  console.log("Seeding word bank...");
+  console.log("Seeding 100 IELTS vocabulary words to word bank...");
+  let count = 0;
   for (const word of wordsToSeed) {
     try {
       await db.insert(wordBank).values({
         word: word.word,
         ipa: word.ipa,
         definition: word.definition,
-        translatedDefinitions: word.translatedDefinitions,
+        translatedDefinitions: {},
         exampleSentence: word.exampleSentence,
-        translatedSentences: word.translatedSentences,
+        translatedSentences: {},
         synonyms: word.synonyms,
         antonyms: word.antonyms,
         difficulty: word.difficulty,
-        usageFrequency: word.usageFrequency,
-      }).onConflictDoNothing();
-      console.log(`Successfully seeded word: ${word.word}`);
+        usageFrequency: 0.5,
+        band: word.band,
+      }).onConflictDoUpdate({
+        target: wordBank.word,
+        set: {
+          ipa: word.ipa,
+          definition: word.definition,
+          synonyms: word.synonyms,
+          antonyms: word.antonyms,
+          difficulty: word.difficulty,
+          band: word.band,
+        }
+      });
+      count++;
     } catch (e) {
       console.error(`Error seeding word: ${word.word}`, e);
     }
   }
-  console.log("Seeding completed successfully.");
+  console.log(`Successfully seeded ${count} words.`);
 }
 
 main().catch((err) => {

@@ -12,7 +12,7 @@ import {
   wordBank
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { evaluateEssay, generateWordExplanation, generateWordDefinition } from "@/lib/open-ai";
+import { evaluateEssay, generateWordExplanation, generateWordDefinition, generateAISuggestedWords } from "@/lib/open-ai";
 import { checkDailyAiLimit } from "@/lib/limits";
 
 // SM-2 Spaced Repetition Algorithm Helper
@@ -356,3 +356,197 @@ async function updateStudyStreak(userId: string) {
     }).where(eq(studyStreaks.userId, userId));
   }
 }
+
+export async function getSuggestedVocabularyAction() {
+  const { userId: clerkId } = await auth();
+  if (!clerkId) throw new Error("Unauthorized");
+
+  const userRecord = await db.query.users.findFirst({
+    where: eq(users.clerkId, clerkId),
+  });
+  if (!userRecord) throw new Error("User not found");
+
+  const userBand = userRecord.estimatedIeltsBand || 5.5;
+  const minBand = userBand;
+  const maxBand = userBand + 2.0;
+
+  // 1. Fetch user's current vocabulary progress records
+  let progressList = await db.query.vocabularyProgress.findMany({
+    where: eq(vocabularyProgress.userId, userRecord.id),
+    with: {
+      word: true,
+    },
+  });
+
+  // Filter those in the band range
+  let targetProgress = progressList.filter(p => {
+    const wordBandValue = p.word.band;
+    return wordBandValue !== null && wordBandValue >= minBand && wordBandValue <= maxBand;
+  });
+
+  // 2. If count is less than 100, try to pull more words from the database wordBank
+  if (targetProgress.length < 100) {
+    const existingWordIds = progressList.map(p => p.wordId);
+    
+    // Find unassociated wordBank words in range [minBand, maxBand]
+    const allDbWords = await db.query.wordBank.findMany();
+    const availableDbWords = allDbWords.filter(w => {
+      const b = w.band;
+      return b !== null && b >= minBand && b <= maxBand && !existingWordIds.includes(w.id);
+    });
+
+    // Link available words up to 100
+    const needed = 100 - targetProgress.length;
+    const toLink = availableDbWords.slice(0, needed);
+    
+    if (toLink.length > 0) {
+      const inserts = toLink.map(w => ({
+        userId: userRecord.id,
+        wordId: w.id,
+        level: 0,
+        easeFactor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        nextReviewDate: new Date(),
+        isCompleted: false,
+      }));
+
+      await db.insert(vocabularyProgress).values(inserts);
+
+      // Re-fetch progress
+      progressList = await db.query.vocabularyProgress.findMany({
+        where: eq(vocabularyProgress.userId, userRecord.id),
+        with: {
+          word: true,
+        },
+      });
+
+      targetProgress = progressList.filter(p => {
+        const wordBandValue = p.word.band;
+        return wordBandValue !== null && wordBandValue >= minBand && wordBandValue <= maxBand;
+      });
+    }
+  }
+
+  // 3. If still less than 100, call OpenAI to dynamically generate more words!
+  if (targetProgress.length < 100) {
+    const limitCheck = await checkDailyAiLimit(userRecord.id);
+    if (limitCheck.allowed) {
+      const excludeWords = progressList.map(p => p.word.word.toLowerCase());
+      try {
+        const aiSuggested = await generateAISuggestedWords(userBand, excludeWords);
+        
+        if (aiSuggested && aiSuggested.words && aiSuggested.words.length > 0) {
+          const insertedWords = [];
+          for (const item of aiSuggested.words) {
+            // Check if word already exists in global bank
+            let existing = await db.query.wordBank.findFirst({
+              where: eq(wordBank.word, item.word),
+            });
+            if (!existing) {
+              const inserted = await db.insert(wordBank).values({
+                word: item.word,
+                ipa: item.ipa,
+                definition: item.definition,
+                translatedDefinitions: item.translatedDefinitions || {},
+                exampleSentence: item.exampleSentence,
+                translatedSentences: item.translatedSentences || {},
+                synonyms: item.synonyms || [],
+                antonyms: item.antonyms || [],
+                difficulty: item.difficulty || "medium",
+                band: item.band,
+              }).returning();
+              existing = inserted[0];
+            }
+            insertedWords.push(existing);
+          }
+
+          // Link new words to user progress
+          const inserts = insertedWords.map(w => ({
+            userId: userRecord.id,
+            wordId: w.id,
+            level: 0,
+            easeFactor: 2.5,
+            interval: 0,
+            repetitions: 0,
+            nextReviewDate: new Date(),
+            isCompleted: false,
+          }));
+
+          await db.insert(vocabularyProgress).values(inserts);
+
+          // Re-fetch progress one final time
+          progressList = await db.query.vocabularyProgress.findMany({
+            where: eq(vocabularyProgress.userId, userRecord.id),
+            with: {
+              word: true,
+            },
+          });
+
+          targetProgress = progressList.filter(p => {
+            const wordBandValue = p.word.band;
+            return wordBandValue !== null && wordBandValue >= minBand && wordBandValue <= maxBand;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to generate AI vocabulary suggestions on page load:", err);
+      }
+    }
+  }
+
+  // Map progress items to frontend format
+  const userPrefLang = userRecord.preferredLanguage || "en";
+  const mapped = targetProgress.map(item => {
+    const translatedDef = (item.word.translatedDefinitions as any)[userPrefLang] || item.word.definition;
+    const translatedEx = (item.word.translatedSentences as any)[userPrefLang] || item.word.exampleSentence;
+    return {
+      progressId: item.id,
+      word: item.word.word,
+      ipa: item.word.ipa || "",
+      englishDefinition: item.word.definition,
+      translatedDefinition: translatedDef,
+      englishExample: item.word.exampleSentence,
+      translatedExample: translatedEx,
+      synonyms: (item.word.synonyms as string[]) || [],
+      antonyms: (item.word.antonyms as string[]) || [],
+      difficulty: item.word.difficulty,
+      nextReviewDate: item.nextReviewDate,
+      isFavorite: item.isFavorite,
+      isCompleted: item.isCompleted,
+      band: item.word.band || userBand,
+    };
+  });
+
+  return {
+    words: mapped,
+    targetBandRange: `${minBand.toFixed(1)} - ${maxBand.toFixed(1)}`,
+  };
+}
+
+export async function markWordAsCompletedAction(progressId: string) {
+  const { userId: clerkId } = await auth();
+  if (!clerkId) throw new Error("Unauthorized");
+
+  const userRecord = await db.query.users.findFirst({
+    where: eq(users.clerkId, clerkId),
+  });
+  if (!userRecord) throw new Error("User not found");
+
+  // Update progress
+  await db.update(vocabularyProgress).set({
+    isCompleted: true,
+  }).where(eq(vocabularyProgress.id, progressId));
+
+  // Log practice session
+  await db.insert(practiceSessions).values({
+    userId: userRecord.id,
+    type: "vocabulary",
+    score: 100, // completed word
+    duration: 30,
+  });
+
+  await updateStudyStreak(userRecord.id);
+
+  return { success: true };
+}
+

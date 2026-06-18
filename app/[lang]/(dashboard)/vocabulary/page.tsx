@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users, wordBank, vocabularyProgress } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { VocabularyClient } from "@/components";
+import { getSuggestedVocabularyAction } from "@/actions/practice";
 
 export default async function VocabularyPage({
   params,
@@ -28,7 +29,7 @@ export default async function VocabularyPage({
     notFound();
   }
 
-  // 2. Fetch vocabulary progress joined with wordBank
+  // 2. Fetch vocabulary progress joined with wordBank for the card review deck
   let progressList = await db.query.vocabularyProgress.findMany({
     where: eq(vocabularyProgress.userId, userRecord.id),
     with: {
@@ -48,6 +49,7 @@ export default async function VocabularyPage({
         interval: 0,
         repetitions: 0,
         nextReviewDate: new Date(),
+        isCompleted: false,
       }));
 
       await db.insert(vocabularyProgress).values(inserts);
@@ -61,7 +63,7 @@ export default async function VocabularyPage({
     }
   }
 
-  // Map database entries to match frontend schema
+  // Map database entries to match frontend schema for overall word bank
   const mappedWords = progressList.map((item) => {
     // Find matching translation
     const userPrefLang = userRecord.preferredLanguage || "en";
@@ -84,6 +86,9 @@ export default async function VocabularyPage({
     };
   });
 
+  // Fetch the 100 suggested vocabulary words for target band range
+  const suggestedData = await getSuggestedVocabularyAction();
+
   return (
     <div className="space-y-8 max-w-6xl mx-auto px-4 py-8">
       <div>
@@ -99,6 +104,8 @@ export default async function VocabularyPage({
         words={mappedWords} 
         dict={dict} 
         preferredLang={userRecord.preferredLanguage} 
+        suggestedWords={suggestedData.words}
+        targetBandRange={suggestedData.targetBandRange}
       />
     </div>
   );

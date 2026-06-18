@@ -114,6 +114,7 @@ export const wordBank = pgTable("word_bank", {
   difficulty: text("difficulty").notNull(), // "easy", "medium", "hard"
   usageFrequency: real("usage_frequency"),
   audioUrl: text("audio_url"),
+  band: real("band"), // estimated IELTS band mapping
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -129,6 +130,7 @@ export const vocabularyProgress = pgTable("vocabulary_progress", {
   nextReviewDate: timestamp("next_review_date").defaultNow().notNull(),
   lastReviewedDate: timestamp("last_reviewed_date"),
   isFavorite: boolean("is_favorite").default(false).notNull(),
+  isCompleted: boolean("is_completed").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
