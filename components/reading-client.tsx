@@ -50,14 +50,6 @@ export default function ReadingClient({
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useAtom(readingResultAtom);
 
-  if (!mounted) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-      </div>
-    );
-  }
-
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -76,6 +68,14 @@ export default function ReadingClient({
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, [testStarted, result]);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   // Restart settings when changing passage
   const handlePassageSelect = (idx: number) => {
