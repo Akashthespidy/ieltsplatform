@@ -391,14 +391,26 @@ export async function getSuggestedVocabularyAction() {
     },
   });
 
+  // Deduplicate progressList by wordId to prevent duplicate key rendering errors on the client
+  const seenWordIds = new Set<string>();
+  progressList = progressList.filter(p => {
+    if (!p.word || seenWordIds.has(p.wordId)) {
+      return false;
+    }
+    seenWordIds.add(p.wordId);
+    return true;
+  });
+
   // Filter those in the band range
   let targetProgress = progressList.filter(p => {
     const wordBandValue = p.word.band;
     return wordBandValue !== null && wordBandValue >= minBand && wordBandValue <= maxBand;
   });
 
-  // 2. If count is less than 100, try to pull more words from the database wordBank
-  if (targetProgress.length < 100) {
+  const TARGET_SUGGESTED_POOL_SIZE = 25;
+
+  // 2. If count is less than target size, try to pull more words from the database wordBank
+  if (targetProgress.length < TARGET_SUGGESTED_POOL_SIZE) {
     const existingWordIds = progressList.map(p => p.wordId);
     
     // Find unassociated wordBank words in range [minBand, maxBand]
@@ -408,8 +420,8 @@ export async function getSuggestedVocabularyAction() {
       return b !== null && b >= minBand && b <= maxBand && !existingWordIds.includes(w.id);
     });
 
-    // Link available words up to 100
-    const needed = 100 - targetProgress.length;
+    // Link available words up to target size
+    const needed = TARGET_SUGGESTED_POOL_SIZE - targetProgress.length;
     const toLink = availableDbWords.slice(0, needed);
     
     if (toLink.length > 0) {
@@ -434,6 +446,16 @@ export async function getSuggestedVocabularyAction() {
         },
       });
 
+      // Deduplicate progressList
+      const seenWordIdsRe = new Set<string>();
+      progressList = progressList.filter(p => {
+        if (!p.word || seenWordIdsRe.has(p.wordId)) {
+          return false;
+        }
+        seenWordIdsRe.add(p.wordId);
+        return true;
+      });
+
       targetProgress = progressList.filter(p => {
         const wordBandValue = p.word.band;
         return wordBandValue !== null && wordBandValue >= minBand && wordBandValue <= maxBand;
@@ -441,8 +463,8 @@ export async function getSuggestedVocabularyAction() {
     }
   }
 
-  // 3. If still less than 100, call OpenAI to dynamically generate more words!
-  if (targetProgress.length < 100) {
+  // 3. If still less than target size, call OpenAI to dynamically generate more words!
+  if (targetProgress.length < TARGET_SUGGESTED_POOL_SIZE) {
     const limitCheck = await checkDailyAiLimit(userRecord.id);
     if (limitCheck.allowed) {
       const excludeWords = progressList.map(p => p.word.word.toLowerCase());
@@ -474,19 +496,24 @@ export async function getSuggestedVocabularyAction() {
             insertedWords.push(existing);
           }
 
-          // Link new words to user progress
-          const inserts = insertedWords.map(w => ({
-            userId: userRecord.id,
-            wordId: w.id,
-            level: 0,
-            easeFactor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            nextReviewDate: new Date(),
-            isCompleted: false,
-          }));
+          // Link new words to user progress, preventing duplicate entries
+          const existingWordIds = progressList.map(p => p.wordId);
+          const toLink = insertedWords.filter(w => !existingWordIds.includes(w.id));
 
-          await db.insert(vocabularyProgress).values(inserts);
+          if (toLink.length > 0) {
+            const inserts = toLink.map(w => ({
+              userId: userRecord.id,
+              wordId: w.id,
+              level: 0,
+              easeFactor: 2.5,
+              interval: 0,
+              repetitions: 0,
+              nextReviewDate: new Date(),
+              isCompleted: false,
+            }));
+
+            await db.insert(vocabularyProgress).values(inserts);
+          }
 
           // Re-fetch progress one final time
           progressList = await db.query.vocabularyProgress.findMany({
@@ -494,6 +521,16 @@ export async function getSuggestedVocabularyAction() {
             with: {
               word: true,
             },
+          });
+
+          // Deduplicate progressList
+          const seenWordIdsFinal = new Set<string>();
+          progressList = progressList.filter(p => {
+            if (!p.word || seenWordIdsFinal.has(p.wordId)) {
+              return false;
+            }
+            seenWordIdsFinal.add(p.wordId);
+            return true;
           });
 
           targetProgress = progressList.filter(p => {

@@ -32,6 +32,11 @@ export default function DashboardClient({
   chartData: any;
   dict: any;
 }) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Decline warning detection - check if Grammar is low in strengths
   const grammarSkill = chartData.skillStrengths.find((s: any) => s.skill === "Grammar");
   const showDeclineWarning = grammarSkill && grammarSkill.score < 60;
@@ -108,23 +113,27 @@ export default function DashboardClient({
         <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 space-y-4 backdrop-blur lg:col-span-2">
           <h3 className="text-sm font-bold text-zinc-300">Weekly Performance Trend</h3>
           <div className="h-[260px] w-full text-xs">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData.weeklyPerformance} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="day" stroke="#52525b" fontSize={11} tickLine={false} />
-                <YAxis stroke="#52525b" fontSize={11} tickLine={false} domain={[0, 100]} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "12px", color: "#f4f4f5" }}
-                  labelStyle={{ fontWeight: "bold" }}
-                />
-                <Area type="monotone" dataKey="score" stroke="#a78bfa" strokeWidth={2.5} fillOpacity={1} fill="url(#colorScore)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <AreaChart data={chartData.weeklyPerformance} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="day" stroke="#52525b" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#52525b" fontSize={11} tickLine={false} domain={[0, 100]} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "12px", color: "#f4f4f5" }}
+                    labelStyle={{ fontWeight: "bold" }}
+                  />
+                  <Area type="monotone" dataKey="score" stroke="#a78bfa" strokeWidth={2.5} fillOpacity={1} fill="url(#colorScore)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full bg-zinc-900/10 rounded-2xl animate-pulse" />
+            )}
           </div>
         </div>
 
@@ -132,14 +141,18 @@ export default function DashboardClient({
         <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 space-y-4 backdrop-blur lg:col-span-1">
           <h3 className="text-sm font-bold text-zinc-300">Skill Diagnostic distribution</h3>
           <div className="h-[260px] w-full text-[10px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData.skillStrengths}>
-                <PolarGrid stroke="#27272a" />
-                <PolarAngleAxis dataKey="skill" stroke="#a1a1aa" />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#27272a" tick={false} />
-                <Radar name="Skills" dataKey="score" stroke="#d946ef" fill="#d946ef" fillOpacity={0.25} />
-              </RadarChart>
-            </ResponsiveContainer>
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData.skillStrengths}>
+                  <PolarGrid stroke="#27272a" />
+                  <PolarAngleAxis dataKey="skill" stroke="#a1a1aa" />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#27272a" tick={false} />
+                  <Radar name="Skills" dataKey="score" stroke="#d946ef" fill="#d946ef" fillOpacity={0.25} />
+                </RadarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full bg-zinc-900/10 rounded-2xl animate-pulse" />
+            )}
           </div>
         </div>
       </div>
@@ -197,17 +210,21 @@ export default function DashboardClient({
         <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 space-y-4 backdrop-blur lg:col-span-2">
           <h3 className="text-sm font-bold text-zinc-300">{dict.dashboard.vocabGrowth}</h3>
           <div className="h-[200px] w-full text-xs">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData.vocabGrowth} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis dataKey="week" stroke="#52525b" fontSize={11} tickLine={false} />
-                <YAxis stroke="#52525b" fontSize={11} tickLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "12px", color: "#f4f4f5" }}
-                />
-                <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2.5} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <LineChart data={chartData.vocabGrowth} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis dataKey="week" stroke="#52525b" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#52525b" fontSize={11} tickLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "12px", color: "#f4f4f5" }}
+                  />
+                  <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2.5} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full bg-zinc-900/10 rounded-2xl animate-pulse" />
+            )}
           </div>
         </div>
 

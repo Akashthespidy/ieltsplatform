@@ -400,7 +400,7 @@ export default function VocabularyClient({
                   <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">
                     Active Study Queue ({activeUncompletedSuggested.length} uncompleted words)
                   </h3>
-                  <span className="text-[10px] text-zinc-500 font-semibold italic">Total suggestions: 100</span>
+                  <span className="text-[10px] text-zinc-500 font-semibold italic">Total suggestions: {localSuggestedWords.length}</span>
                 </div>
 
                 {activeUncompletedSuggested.length > 0 ? (
@@ -574,7 +574,7 @@ export default function VocabularyClient({
             <div className="border border-zinc-800 rounded-2xl overflow-hidden max-h-[200px] overflow-y-auto divide-y divide-zinc-800 custom-scrollbar bg-zinc-950/40">
               {filteredAllWords.length > 0 ? (
                 filteredAllWords.map((word) => (
-                  <div key={word.word} className="p-3.5 hover:bg-zinc-900/30 transition-all space-y-1">
+                  <div key={word.progressId} className="p-3.5 hover:bg-zinc-900/30 transition-all space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-white text-xs">{word.word}</span>
                       <span className="text-[9px] text-zinc-500 font-mono">{word.ipa}</span>
@@ -600,8 +600,8 @@ export default function VocabularyClient({
             {activeRightWord ? (
               activeRightWord.synonyms && activeRightWord.synonyms.length > 0 ? (
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {activeRightWord.synonyms.map((syn) => (
-                    <span key={syn} className="px-3 py-1 rounded-xl bg-purple-950/40 border border-purple-500/20 text-purple-300 text-xs font-semibold">
+                  {activeRightWord.synonyms.map((syn, idx) => (
+                    <span key={`${syn}-${idx}`} className="px-3 py-1 rounded-xl bg-purple-950/40 border border-purple-500/20 text-purple-300 text-xs font-semibold">
                       {syn}
                     </span>
                   ))}
@@ -622,8 +622,8 @@ export default function VocabularyClient({
             {activeRightWord ? (
               activeRightWord.antonyms && activeRightWord.antonyms.length > 0 ? (
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {activeRightWord.antonyms.map((ant) => (
-                    <span key={ant} className="px-3 py-1 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-semibold">
+                  {activeRightWord.antonyms.map((ant, idx) => (
+                    <span key={`${ant}-${idx}`} className="px-3 py-1 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-semibold">
                       {ant}
                     </span>
                   ))}

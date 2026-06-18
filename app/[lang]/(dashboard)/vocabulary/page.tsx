@@ -63,6 +63,16 @@ export default async function VocabularyPage({
     }
   }
 
+  // Deduplicate progressList by wordId to prevent duplicate key rendering errors on the client
+  const seenWordIds = new Set<string>();
+  progressList = progressList.filter((item) => {
+    if (!item.word || seenWordIds.has(item.wordId)) {
+      return false;
+    }
+    seenWordIds.add(item.wordId);
+    return true;
+  });
+
   // Map database entries to match frontend schema for overall word bank
   const mappedWords = progressList.map((item) => {
     // Find matching translation
