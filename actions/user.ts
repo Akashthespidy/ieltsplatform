@@ -10,11 +10,12 @@ import { completeOnboardingSchema } from "@/lib/schemas";
 export async function completeOnboardingAction(data: {
   preferredLanguage: string;
   target: string;
-  vocabularyAnswer: string;
-  readingAnswer: string;
-  grammarAnswer: string;
-  writingAnswer: string;
-  speakingAnswer: string;
+  skipped?: boolean;
+  vocabularyAnswer?: string;
+  readingAnswer?: string;
+  grammarAnswer?: string;
+  writingAnswer?: string;
+  speakingAnswer?: string;
 }) {
   const validated = completeOnboardingSchema.parse(data);
   const { userId: clerkId } = await auth();
@@ -53,14 +54,32 @@ export async function completeOnboardingAction(data: {
     }).onConflictDoNothing();
   }
 
-  // 2. Grade the Placement Test using OpenAI API
-  const aiResult = await evaluatePlacementTest({
-    vocabulary: validated.vocabularyAnswer,
-    reading: validated.readingAnswer,
-    grammar: validated.grammarAnswer,
-    writing: validated.writingAnswer,
-    speaking: validated.speakingAnswer,
-  });
+  // 2. If skipped, use defaults; otherwise grade via OpenAI
+  let aiResult: {
+    cefrLevel: string;
+    estimatedIeltsBand: number;
+    studyRecommendation: string;
+    strengths: string[];
+    weaknesses: string[];
+  };
+
+  if (validated.skipped) {
+    aiResult = {
+      cefrLevel: "B1",
+      estimatedIeltsBand: 5.5,
+      studyRecommendation: `Welcome! Since you skipped the placement test, we've set your starting level at B1 (IELTS Band 5.5). Complete practice sessions to refine your personalized study plan. Focus on all four IELTS skills: Listening, Reading, Writing, and Speaking.`,
+      strengths: ["Motivation to learn", "Self-directed learner"],
+      weaknesses: ["Placement data pending — complete a test to get precise diagnostics"],
+    };
+  } else {
+    aiResult = await evaluatePlacementTest({
+      vocabulary: validated.vocabularyAnswer || "",
+      reading: validated.readingAnswer || "",
+      grammar: validated.grammarAnswer || "",
+      writing: validated.writingAnswer || "",
+      speaking: validated.speakingAnswer || "",
+    });
+  }
 
   // 3. Update User Onboarding status
   await db.update(users).set({
@@ -101,6 +120,7 @@ export async function completeOnboardingAction(data: {
     success: true,
     cefrLevel: aiResult.cefrLevel,
     estimatedIeltsBand: aiResult.estimatedIeltsBand,
+    skipped: validated.skipped,
   };
 }
 

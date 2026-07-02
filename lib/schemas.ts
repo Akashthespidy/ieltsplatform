@@ -3,11 +3,12 @@ import { z } from "zod";
 export const completeOnboardingSchema = z.object({
   preferredLanguage: z.string().min(2).max(10),
   target: z.string().min(1, { message: "Target cannot be empty" }),
-  vocabularyAnswer: z.string().min(1, { message: "Vocabulary answer is required" }),
-  readingAnswer: z.string().min(1, { message: "Reading answer is required" }),
-  grammarAnswer: z.string().min(1, { message: "Grammar answer is required" }),
-  writingAnswer: z.string().min(1, { message: "Writing answer is required" }),
-  speakingAnswer: z.string().min(1, { message: "Speaking answer is required" }),
+  skipped: z.boolean().optional().default(false),
+  vocabularyAnswer: z.string().optional().default(""),
+  readingAnswer: z.string().optional().default(""),
+  grammarAnswer: z.string().optional().default(""),
+  writingAnswer: z.string().optional().default(""),
+  speakingAnswer: z.string().optional().default(""),
 });
 
 export const reviewWordSchema = z.object({
