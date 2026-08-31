@@ -32,7 +32,7 @@ export default function SettingsClient({
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const { register, handleSubmit, formState: { errors } } = useForm<SettingsFormValues>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       preferredLanguage: user.preferredLanguage || "en",
@@ -42,6 +42,16 @@ export default function SettingsClient({
     },
   });
 
+  const currentSelectedLang = watch("preferredLanguage");
+
+  const languages = [
+    { code: "en", label: "English", native: "English", flag: "🇬🇧" },
+    { code: "bn", label: "Bengali", native: "বাংলা", flag: "🇧🇩" },
+    { code: "ja", label: "Japanese", native: "日本語", flag: "🇯🇵" },
+    { code: "es", label: "Spanish", native: "Español", flag: "🇪🇸" },
+    { code: "ar", label: "Arabic", native: "العربية", flag: "🇸🇦" },
+  ];
+
   const onSubmit = async (values: SettingsFormValues) => {
     setLoading(true);
     setSuccessMsg("");
@@ -49,13 +59,14 @@ export default function SettingsClient({
     try {
       const res = await updateUserSettingsAction(values);
       if (res.success) {
-        setSuccessMsg("Settings updated successfully!");
-        // Refresh page to load new localization if language changed
-        router.refresh();
+        setSuccessMsg("Settings saved! Applying language and preferences...");
+        // Redirect to new language route so dictionary loads cleanly
+        setTimeout(() => {
+          window.location.href = `/${values.preferredLanguage}/settings`;
+        }, 600);
       }
     } catch (e: any) {
       setErrorMsg(e.message || "Failed to update settings.");
-    } finally {
       setLoading(false);
     }
   };
@@ -146,29 +157,48 @@ export default function SettingsClient({
 
       {/* Main Settings Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 sm:p-8 space-y-6 backdrop-blur">
-        <h3 className="text-lg font-bold text-white border-b border-zinc-800 pb-3 flex items-center gap-2">
-          <Globe className="h-5 w-5 text-purple-500" />
-          General Configuration
-        </h3>
+        <div className="border-b border-zinc-800 pb-3 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <Globe className="h-5 w-5 text-purple-500" />
+            General Configuration
+          </h3>
+          <span className="text-xs text-zinc-500 font-semibold">Current: <strong className="text-purple-400 uppercase font-mono">{currentSelectedLang}</strong></span>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          
-          {/* Preferred Language */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-zinc-400 uppercase">Preferred Language</label>
-            <select
-              {...register("preferredLanguage")}
-              className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-300 focus:outline-none focus:border-purple-500 transition-all"
-            >
-              <option value="en">English</option>
-              <option value="bn">বাংলা (Bangla)</option>
-              <option value="ja">日本語 (Japanese)</option>
-              <option value="es">Español (Spanish)</option>
-              <option value="ar">العربية (Arabic)</option>
-            </select>
-            {errors.preferredLanguage && <span className="text-[10px] text-red-400">{errors.preferredLanguage.message}</span>}
+        {/* Preferred Native Language Selection Cards */}
+        <div className="space-y-3">
+          <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+            Select Your Native / Preferred Language
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {languages.map((langItem) => {
+              const isSelected = currentSelectedLang === langItem.code;
+              return (
+                <button
+                  type="button"
+                  key={langItem.code}
+                  onClick={() => setValue("preferredLanguage", langItem.code, { shouldValidate: true, shouldDirty: true })}
+                  className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between gap-3 ${
+                    isSelected
+                      ? "border-purple-500 bg-purple-950/30 ring-2 ring-purple-500/40 text-white shadow-lg shadow-purple-950/20"
+                      : "border-zinc-800 bg-zinc-950/40 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                  }`}
+                >
+                  <span className="text-2xl">{langItem.flag}</span>
+                  <div>
+                    <span className="font-extrabold text-sm block text-white">{langItem.native}</span>
+                    <span className="text-[11px] text-zinc-500">{langItem.label}</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
+          <input type="hidden" {...register("preferredLanguage")} />
+          {errors.preferredLanguage && <span className="text-[10px] text-red-400">{errors.preferredLanguage.message}</span>}
+        </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
+          
           {/* English Target */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-zinc-400 uppercase">English Practice Target</label>
@@ -176,7 +206,7 @@ export default function SettingsClient({
               {...register("target")}
               className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-300 focus:outline-none focus:border-purple-500 transition-all"
             >
-              <option value="IELTS">IELTS Preparation (Academic & General)</option>
+              <option value="IELTS">IELTS (Academic & General)</option>
               <option value="TOEFL">TOEFL Preparation</option>
               <option value="GRE">GRE Preparation</option>
               <option value="General English">General English</option>
