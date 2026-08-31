@@ -84,14 +84,33 @@ export default async function Home({
           <a href="#pricing" className="hover:text-zinc-50 transition-colors">{dict.landing.pricing}</a>
           <a href="#faq" className="hover:text-zinc-50 transition-colors">{dict.landing.faq}</a>
         </nav>
-        <div className="flex items-center gap-4">
-          {/* Language Switcher Link */}
-          <div className="flex items-center gap-1.5 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-zinc-400">
-            <span className="font-semibold uppercase">{lang}</span>
+        <div className="flex items-center gap-3">
+          {/* Language Switcher in Hero Site */}
+          <div className="flex items-center gap-1 border border-zinc-800 bg-zinc-900/60 rounded-xl p-1 text-xs">
+            {[
+              { code: "en", label: "EN" },
+              { code: "bn", label: "BN" },
+              { code: "ja", label: "JA" },
+              { code: "es", label: "ES" },
+              { code: "ar", label: "AR" },
+            ].map((l) => (
+              <Link
+                key={l.code}
+                href={`/${l.code}`}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
+                  lang === l.code
+                    ? "bg-purple-600 text-white"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {l.label}
+              </Link>
+            ))}
           </div>
+
           <Link 
             href={`/${lang}/dashboard`}
-            className="flex items-center gap-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-4 py-2 transition-all shadow-md shadow-purple-600/20"
+            className="flex items-center gap-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white rounded-xl px-4 py-2 transition-all shadow-md shadow-purple-600/20 hover:scale-105"
           >
             Dashboard
             <ArrowRight className="h-3 w-3" />

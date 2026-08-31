@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAtom } from "jotai";
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
 import {
@@ -25,13 +25,20 @@ import {
   Brain,
   CheckCircle,
   AlertCircle,
+  Play,
+  Pause,
+  RotateCcw,
+  Clock,
 } from "lucide-react";
-import { speakingTranscriptAtom, speakingResultAtom } from "@/lib/store";
+import { speakingResultAtom } from "@/lib/store";
 
 interface Prompt {
   id: string;
+  part?: number;
+  partLabel?: string;
   topic: string;
   instruction: string;
+  bulletPoints?: string[];
 }
 
 interface SpeakingEvaluation {
@@ -120,12 +127,44 @@ export default function SpeakingClient({
   }, []);
 
   const [activePromptIndex, setActivePromptIndex] = useState(0);
-  const activePrompt = prompts[activePromptIndex];
+  const activePrompt = prompts[activePromptIndex] || prompts[0];
 
   const { isRecording, audioBlob, recordingTime, startRecording, stopRecording } = useAudioRecorder();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useAtom(speakingResultAtom) as any;
   const [expandedSection, setExpandedSection] = useState<string | null>("scorecard");
+
+  // Audio Playback Preview State
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+
+  // 60-Second Preparation Timer for Part 2 Cue Cards
+  const [prepSeconds, setPrepSeconds] = useState(60);
+  const [prepActive, setPrepActive] = useState(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (prepActive && prepSeconds > 0) {
+      interval = setInterval(() => {
+        setPrepSeconds((prev) => prev - 1);
+      }, 1000);
+    } else if (prepSeconds === 0) {
+      setPrepActive(false);
+    }
+    return () => clearInterval(interval);
+  }, [prepActive, prepSeconds]);
+
+  // Create preview URL when audio blob changes
+  useEffect(() => {
+    if (audioBlob) {
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setAudioUrl(null);
+    }
+  }, [audioBlob]);
 
   if (!mounted) {
     return (
@@ -137,11 +176,23 @@ export default function SpeakingClient({
 
   const handleStart = () => {
     setResult(null);
+    setPrepActive(false);
     startRecording();
   };
 
   const handleStop = async () => {
     stopRecording();
+  };
+
+  const handleToggleAudioPlay = () => {
+    if (!audioPlayerRef.current) return;
+    if (isPlayingAudio) {
+      audioPlayerRef.current.pause();
+      setIsPlayingAudio(false);
+    } else {
+      audioPlayerRef.current.play();
+      setIsPlayingAudio(true);
+    }
   };
 
   const handleEvaluate = async () => {
@@ -202,85 +253,91 @@ export default function SpeakingClient({
       {/* ===================== LEFT: Recorder + Transcript ===================== */}
       <div className="lg:col-span-2 space-y-6">
 
-        {/* Professional Intro Panel (no recording yet) */}
-        {!result && !audioBlob && !isRecording && (
-          <div className="border border-purple-500/20 bg-gradient-to-br from-purple-950/30 to-indigo-950/20 rounded-3xl p-6 space-y-4 backdrop-blur">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
-                <Brain className="h-5 w-5 text-purple-300" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white mb-1">IELTS Speaking Assessment</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Our AI examiner evaluates your spoken English across the four official IELTS Speaking criteria: <strong className="text-zinc-300">Fluency & Coherence</strong>, <strong className="text-zinc-300">Lexical Resource</strong>, <strong className="text-zinc-300">Grammatical Range</strong>, and <strong className="text-zinc-300">Pronunciation</strong>.
-                </p>
-              </div>
-            </div>
-
-            {/* What AI evaluates */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: "Fluency", desc: "Natural flow & hesitation", icon: TrendingUp, color: "text-purple-400" },
-                { label: "Pronunciation", desc: "Clarity & intelligibility", icon: Volume2, color: "text-pink-400" },
-                { label: "Grammar", desc: "Range & accuracy", icon: Target, color: "text-teal-400" },
-                { label: "Vocabulary", desc: "Variety & precision", icon: BookOpen, color: "text-amber-400" },
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center text-center p-3 rounded-xl bg-zinc-950/30 border border-zinc-800/50 gap-1.5">
-                  <item.icon className={`h-4 w-4 ${item.color}`} />
-                  <span className="text-[11px] font-bold text-zinc-300">{item.label}</span>
-                  <span className="text-[10px] text-zinc-500">{item.desc}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Recording tips */}
-            <div className="space-y-2 border-t border-zinc-800/40 pt-4">
-              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-                <Lightbulb className="h-3 w-3 text-amber-400" /> Tips for best results
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {[
-                  { tip: "Speak for at least 60 seconds", icon: "⏱️" },
-                  { tip: "Use a quiet environment", icon: "🔇" },
-                  { tip: "Use complex sentence structures", icon: "📝" },
-                ].map((t, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[11px] text-zinc-400 bg-zinc-950/30 rounded-xl p-2.5 border border-zinc-800/50">
-                    <span>{t.icon}</span>
-                    {t.tip}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Prompt Selector */}
-        <div className="border border-zinc-800 bg-zinc-900/20 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Speaking Topics</span>
-            <div className="flex gap-2">
+        {/* Prompt Selector with IELTS Part indicators */}
+        <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 space-y-5 backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-3">
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">IELTS Speaking Tasks</span>
+            <div className="flex flex-wrap gap-2">
               {prompts.map((p, idx) => (
                 <button
                   key={p.id}
                   onClick={() => {
                     setActivePromptIndex(idx);
                     setResult(null);
+                    setPrepSeconds(60);
+                    setPrepActive(false);
                   }}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                     activePromptIndex === idx
-                      ? "border-purple-500 bg-purple-950/10 text-purple-300"
-                      : "border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                      ? "border-purple-500 bg-purple-950/30 text-purple-300 shadow-md shadow-purple-950/20"
+                      : "border-zinc-800 text-zinc-400 hover:border-zinc-700 bg-zinc-950/40"
                   }`}
                 >
-                  Topic {idx + 1}
+                  {p.partLabel ? p.partLabel.split(":")[0] : `Task ${idx + 1}`}
                 </button>
               ))}
             </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-white mb-1">{activePrompt.topic}</h3>
-            <p className="text-zinc-400 text-xs leading-relaxed">{activePrompt.instruction}</p>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 text-[10px] font-bold uppercase tracking-wider">
+                {activePrompt.partLabel || "IELTS Speaking"}
+              </span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-white leading-snug">{activePrompt.topic}</h3>
+            <p className="text-zinc-300 text-xs leading-relaxed">{activePrompt.instruction}</p>
+
+            {activePrompt.bulletPoints && activePrompt.bulletPoints.length > 0 && (
+              <div className="p-4 rounded-2xl bg-zinc-950/50 border border-zinc-800/80 space-y-2">
+                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">You should say:</span>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-zinc-300">
+                  {activePrompt.bulletPoints.map((bp, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                      {bp}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
+
+          {/* Part 2: 1-Minute Prep Countdown Timer */}
+          {activePrompt.part === 2 && (
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-purple-950/15 border border-purple-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
+                  <Clock className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-zinc-200">1-Minute Preparation Timer</h4>
+                  <span className="text-[10px] text-zinc-500">Plan key keywords and points before speaking</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xl font-black font-mono text-purple-400">
+                  00:{prepSeconds.toString().padStart(2, "0")}
+                </span>
+                <button
+                  onClick={() => setPrepActive(!prepActive)}
+                  className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition-all"
+                >
+                  {prepActive ? "Pause" : prepSeconds === 60 ? "Start Timer" : "Resume"}
+                </button>
+                <button
+                  onClick={() => {
+                    setPrepActive(false);
+                    setPrepSeconds(60);
+                  }}
+                  className="p-1.5 rounded-xl border border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                  title="Reset timer"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Recording Panel */}
@@ -316,7 +373,7 @@ export default function SpeakingClient({
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-4 relative z-10">
+          <div className="flex flex-wrap items-center justify-center gap-4 relative z-10">
             {!isRecording ? (
               <button
                 onClick={handleStart}
@@ -337,6 +394,26 @@ export default function SpeakingClient({
               </button>
             )}
 
+            {/* Audio Playback Preview Button */}
+            {audioUrl && !isRecording && (
+              <button
+                onClick={handleToggleAudioPlay}
+                className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm font-bold transition-all border border-zinc-700 hover:scale-105"
+              >
+                {isPlayingAudio ? (
+                  <>
+                    <Pause className="h-4 w-4 text-purple-400" />
+                    Pause Playback
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 text-purple-400" />
+                    Listen to My Recording
+                  </>
+                )}
+              </button>
+            )}
+
             {audioBlob && !isRecording && (
               <button
                 onClick={handleEvaluate}
@@ -346,7 +423,7 @@ export default function SpeakingClient({
                 {loading ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin" />
-                    Analysing...
+                    Analysing Speech...
                   </>
                 ) : (
                   <>
@@ -358,9 +435,19 @@ export default function SpeakingClient({
             )}
           </div>
 
+          {/* Hidden audio element for preview playback */}
+          {audioUrl && (
+            <audio
+              ref={audioPlayerRef}
+              src={audioUrl}
+              onEnded={() => setIsPlayingAudio(false)}
+              className="hidden"
+            />
+          )}
+
           {audioBlob && !isRecording && !result && (
             <p className="text-[11px] text-zinc-500 font-semibold italic relative z-10">
-              ✓ Audio captured — click &ldquo;Evaluate Speech&rdquo; for your AI examiner report.
+              ✓ Audio captured ({formatTime(recordingTime)}) — you can listen back or submit for AI examiner scoring.
             </p>
           )}
         </div>
@@ -385,7 +472,7 @@ export default function SpeakingClient({
 
             {expandedSection === "transcript" && (
               <div className="p-5 sm:p-6 space-y-3">
-                <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">AI Transcription</p>
+                <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">AI Transcription (Whisper)</p>
                 <div className="relative p-5 bg-zinc-950/40 rounded-2xl border border-zinc-800">
                   <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded-md">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -551,3 +638,4 @@ export default function SpeakingClient({
     </div>
   );
 }
+

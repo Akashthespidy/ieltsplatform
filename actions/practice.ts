@@ -9,7 +9,8 @@ import {
   readingAttempts, 
   practiceSessions, 
   studyStreaks,
-  wordBank
+  wordBank,
+  studyPlans
 } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { evaluateEssay, generateWordExplanation, generateWordDefinition, generateAISuggestedWords } from "@/lib/open-ai";
@@ -20,7 +21,10 @@ import {
   searchOrGenerateWordSchema,
   submitEssaySchema,
   saveReadingAttemptSchema,
-  markWordAsCompletedSchema
+  markWordAsCompletedSchema,
+  saveListeningAttemptSchema,
+  toggleStudyTaskSchema,
+  toggleFavoriteWordSchema
 } from "@/lib/schemas";
 
 // SM-2 Spaced Repetition Algorithm Helper
@@ -600,4 +604,92 @@ export async function markWordAsCompletedAction(progressId: string) {
 
   return { success: true };
 }
+
+// Action to save Listening Attempt
+export async function saveListeningAttemptAction(data: {
+  testId: string;
+  answers: Record<string, number>;
+  score: number;
+  feedback: string;
+}) {
+  const validated = saveListeningAttemptSchema.parse(data);
+  const { userId: clerkId } = await auth();
+  if (!clerkId) throw new Error("Unauthorized");
+
+  const userRecord = await db.query.users.findFirst({
+    where: eq(users.clerkId, clerkId),
+  });
+  if (!userRecord) throw new Error("User not found");
+
+  // Log as practice session
+  await db.insert(practiceSessions).values({
+    userId: userRecord.id,
+    type: "listening",
+    score: validated.score,
+    duration: 180,
+  });
+
+  await updateStudyStreak(userRecord.id);
+
+  return { success: true };
+}
+
+// Action to toggle study plan task completion status
+export async function toggleStudyTaskAction(planId: string, taskId: string, isCompleted: boolean) {
+  const validated = toggleStudyTaskSchema.parse({ planId, taskId, isCompleted });
+  const { userId: clerkId } = await auth();
+  if (!clerkId) throw new Error("Unauthorized");
+
+  const userRecord = await db.query.users.findFirst({
+    where: eq(users.clerkId, clerkId),
+  });
+  if (!userRecord) throw new Error("User not found");
+
+  const plan = await db.query.studyPlans.findFirst({
+    where: and(
+      eq(studyPlans.id, validated.planId),
+      eq(studyPlans.userId, userRecord.id)
+    ),
+  });
+
+  if (!plan) throw new Error("Study plan not found");
+
+  const currentTasks = (plan.tasks as Array<{ id: string; label: string; isCompleted: boolean }>) || [];
+  const updatedTasks = currentTasks.map(t =>
+    t.id === validated.taskId ? { ...t, isCompleted: validated.isCompleted } : t
+  );
+
+  const allCompleted = updatedTasks.every(t => t.isCompleted);
+
+  await db.update(studyPlans).set({
+    tasks: updatedTasks,
+    isCompleted: allCompleted,
+  }).where(eq(studyPlans.id, validated.planId));
+
+  return { success: true, tasks: updatedTasks, isCompleted: allCompleted };
+}
+
+// Action to toggle favorite / bookmark on vocabulary progress word
+export async function toggleFavoriteWordAction(progressId: string, isFavorite: boolean) {
+  const validated = toggleFavoriteWordSchema.parse({ progressId, isFavorite });
+  const { userId: clerkId } = await auth();
+  if (!clerkId) throw new Error("Unauthorized");
+
+  const userRecord = await db.query.users.findFirst({
+    where: eq(users.clerkId, clerkId),
+  });
+  if (!userRecord) throw new Error("User not found");
+
+  await db.update(vocabularyProgress).set({
+    isFavorite: validated.isFavorite,
+  }).where(
+    and(
+      eq(vocabularyProgress.id, validated.progressId),
+      eq(vocabularyProgress.userId, userRecord.id)
+    )
+  );
+
+  return { success: true, isFavorite: validated.isFavorite };
+}
+
 

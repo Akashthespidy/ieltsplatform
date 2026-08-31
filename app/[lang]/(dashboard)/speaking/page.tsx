@@ -4,14 +4,55 @@ import { SpeakingClient } from "@/components";
 
 const speakingPrompts = [
   {
-    id: "sp-1",
-    topic: "Describe a memorable book you have read recently.",
-    instruction: "Explain what the book is about, why you chose to read it, and why it made a lasting impression on you. Try to speak for 1-2 minutes."
+    id: "sp-part1",
+    part: 1,
+    partLabel: "Part 1: Introduction & Interview",
+    topic: "Hometown & Neighborhood",
+    instruction: "Describe the town or city where you grew up. What do you like most about it, and has it changed much in recent years? Speak naturally for 1–2 minutes.",
+    bulletPoints: [
+      "Where your hometown is located",
+      "What is special or unique about the area",
+      "Recent architectural or transportation changes",
+      "Whether you would like to live there in the future"
+    ]
   },
   {
-    id: "sp-2",
-    topic: "Discuss the pros and cons of dynamic urban environments.",
-    instruction: "Explain why people gravitate toward large metropolitan centers, and describe the difficulties they face. Speak clearly for about 1 minute."
+    id: "sp-part2",
+    part: 2,
+    partLabel: "Part 2: Long Turn (Cue Card)",
+    topic: "Describe an ambition that you have had for a long time",
+    instruction: "You will have 1 minute to prepare your notes, and then you should speak for 1 to 2 minutes on this topic.",
+    bulletPoints: [
+      "What the ambition is and when you first thought of it",
+      "What steps you have taken to achieve it",
+      "Why it is important to you personally",
+      "How you will feel when you finally accomplish it"
+    ]
+  },
+  {
+    id: "sp-part3",
+    part: 3,
+    partLabel: "Part 3: Two-Way Discussion",
+    topic: "Ambition, Success, and Society",
+    instruction: "Discuss how ambition influences societal progress. Do you think people today are more ambitious than previous generations? Discuss with analytical reasoning.",
+    bulletPoints: [
+      "The role of personal ambition vs teamwork in career success",
+      "Whether modern social media fuels unrealistic ambitions",
+      "How schools and universities should foster healthy ambition"
+    ]
+  },
+  {
+    id: "sp-part2-tech",
+    part: 2,
+    partLabel: "Part 2: Long Turn (Cue Card)",
+    topic: "Describe a piece of technology you find difficult to use",
+    instruction: "You will have 1 minute to prepare your notes, and then speak for up to 2 minutes.",
+    bulletPoints: [
+      "What the technology is and what it does",
+      "When and where you encountered it",
+      "Why you find it difficult or complicated to operate",
+      "How you manage to overcome the difficulty"
+    ]
   }
 ];
 
@@ -38,3 +79,4 @@ export default async function SpeakingPage({
     </div>
   );
 }
+

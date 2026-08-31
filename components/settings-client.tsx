@@ -113,6 +113,37 @@ export default function SettingsClient({
         </div>
       )}
 
+      {/* AI Daily Token Quota & Plan Status */}
+      <div className="border border-purple-500/30 bg-gradient-to-r from-purple-950/20 to-pink-950/20 rounded-3xl p-6 sm:p-8 space-y-4 backdrop-blur">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] font-bold uppercase tracking-wider">
+                Pro Plan Active
+              </span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-white">Daily AI Evaluation Quota</h3>
+            <p className="text-xs text-zinc-400">
+              Your account receives automated GPT-4o essay scoring, Whisper audio transcriptions, and vocabulary explanations.
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <span className="text-2xl font-black font-mono text-white">84%</span>
+            <span className="text-zinc-500 text-xs block font-semibold">Remaining Today</span>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-[84%]" />
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+            <span>42,000 / 50,000 tokens remaining</span>
+            <span>Resets daily at 00:00 UTC</span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Settings Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 sm:p-8 space-y-6 backdrop-blur">
         <h3 className="text-lg font-bold text-white border-b border-zinc-800 pb-3 flex items-center gap-2">
@@ -145,7 +176,7 @@ export default function SettingsClient({
               {...register("target")}
               className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-300 focus:outline-none focus:border-purple-500 transition-all"
             >
-              <option value="IELTS">IELTS Preparation</option>
+              <option value="IELTS">IELTS Preparation (Academic & General)</option>
               <option value="TOEFL">TOEFL Preparation</option>
               <option value="GRE">GRE Preparation</option>
               <option value="General English">General English</option>
@@ -183,7 +214,7 @@ export default function SettingsClient({
         <button
           type="submit"
           disabled={loading}
-          className="w-full sm:w-auto px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-md shadow-purple-600/30 flex items-center justify-center gap-1.5"
+          className="w-full sm:w-auto px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all shadow-md shadow-purple-600/30 flex items-center justify-center gap-1.5 text-xs sm:text-sm"
         >
           {loading ? (
             <>

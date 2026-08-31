@@ -46,3 +46,22 @@ export const updateUserSettingsSchema = z.object({
   timezone: z.string().min(1, { message: "Timezone is required" }),
   country: z.string().min(1, { message: "Country is required" }),
 });
+
+export const saveListeningAttemptSchema = z.object({
+  testId: z.string().min(1, { message: "Test ID is required" }),
+  answers: z.record(z.string(), z.number()),
+  score: z.number().min(0).max(100),
+  feedback: z.string().min(1),
+});
+
+export const toggleStudyTaskSchema = z.object({
+  planId: z.string().uuid({ message: "Invalid plan ID" }),
+  taskId: z.string().min(1, { message: "Task ID is required" }),
+  isCompleted: z.boolean(),
+});
+
+export const toggleFavoriteWordSchema = z.object({
+  progressId: z.string().uuid({ message: "Invalid progress ID" }),
+  isFavorite: z.boolean(),
+});
+

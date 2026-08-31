@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { submitEssayAction } from "@/actions/practice";
 import {
@@ -21,13 +21,23 @@ import {
   Target,
   FileText,
   Zap,
+  Clock,
+  RotateCcw,
+  Layers,
+  Copy,
+  Check
 } from "lucide-react";
 import { writingEssayTextAtom, writingResultAtom } from "@/lib/store";
 
 interface Prompt {
   id: string;
+  taskType?: number;
+  taskLabel?: string;
   title: string;
   description: string;
+  targetWords?: number;
+  timeLimitMinutes?: number;
+  guidance?: string;
 }
 
 interface Mistake {
@@ -135,13 +145,37 @@ export default function WritingClient({
   }, []);
 
   const [activePromptIndex, setActivePromptIndex] = useState(0);
-  const activePrompt = prompts[activePromptIndex];
+  const activePrompt = prompts[activePromptIndex] || prompts[0];
 
   const [essayText, setEssayText] = useAtom(writingEssayTextAtom);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useAtom(writingResultAtom) as any;
   const [activeMistake, setActiveMistake] = useState<Mistake | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>("mistakes");
+  const [viewMode, setViewMode] = useState<"diagnostics" | "comparison">("diagnostics");
+  const [copiedModel, setCopiedModel] = useState(false);
+
+  // Exam Countdown Timer
+  const targetMinutes = activePrompt.timeLimitMinutes || 40;
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState(targetMinutes * 60);
+  const [timerActive, setTimerActive] = useState(false);
+
+  useEffect(() => {
+    setTimeLeftSeconds((activePrompt.timeLimitMinutes || 40) * 60);
+    setTimerActive(false);
+  }, [activePromptIndex]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timerActive && timeLeftSeconds > 0) {
+      interval = setInterval(() => {
+        setTimeLeftSeconds((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeftSeconds === 0) {
+      setTimerActive(false);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, timeLeftSeconds]);
 
   if (!mounted) {
     return (
@@ -152,6 +186,7 @@ export default function WritingClient({
   }
 
   const wordCount = essayText.trim() === "" ? 0 : essayText.trim().split(/\s+/).length;
+  const targetWords = activePrompt.targetWords || 250;
 
   const handleSubmit = async () => {
     if (wordCount < 10) {
@@ -163,6 +198,7 @@ export default function WritingClient({
     setResult(null);
     setActiveMistake(null);
     setExpandedSection("mistakes");
+    setTimerActive(false);
     try {
       const res = await submitEssayAction(essayText);
       if (res.success && res.evaluation) {
@@ -172,6 +208,14 @@ export default function WritingClient({
       console.error(e);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCopyModel = () => {
+    if (result?.improvedVersion) {
+      navigator.clipboard.writeText(result.improvedVersion);
+      setCopiedModel(true);
+      setTimeout(() => setCopiedModel(false), 2000);
     }
   };
 
@@ -226,52 +270,23 @@ export default function WritingClient({
         .slice(0, 6)
     : [];
 
+  const formatTimer = (secs: number) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, "0");
+    const s = (secs % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
       {/* ===================== LEFT: Input + Diagnostics ===================== */}
       <div className="lg:col-span-2 space-y-6">
 
-        {/* Professional Intro Banner (when no essay yet) */}
-        {!result && essayText.length === 0 && (
-          <div className="border border-purple-500/20 bg-gradient-to-br from-purple-950/30 to-pink-950/20 rounded-3xl p-6 space-y-4 backdrop-blur">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
-                <Award className="h-5 w-5 text-purple-300" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white mb-1">IELTS Writing Task Evaluation</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Our AI evaluates your essay across the four official IELTS Writing Band Descriptors: <strong className="text-zinc-300">Task Achievement</strong>, <strong className="text-zinc-300">Coherence & Cohesion</strong>, <strong className="text-zinc-300">Lexical Resource</strong>, and <strong className="text-zinc-300">Grammatical Range & Accuracy</strong>.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: "Grammar", band: "B1–C2", icon: Target },
-                { label: "Vocabulary", band: "Range & precision", icon: BookOpen },
-                { label: "Coherence", band: "Flow & logic", icon: TrendingUp },
-                { label: "Task Score", band: "Overall band", icon: Star },
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center text-center p-3 rounded-xl bg-zinc-950/30 border border-zinc-800/50 gap-1.5">
-                  <item.icon className="h-4 w-4 text-purple-400" />
-                  <span className="text-[11px] font-bold text-zinc-300">{item.label}</span>
-                  <span className="text-[10px] text-zinc-500">{item.band}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 text-xs text-zinc-500 border-t border-zinc-800/40 pt-3">
-              <Lightbulb className="h-3.5 w-3.5 text-amber-400 flex-shrink-0" />
-              <span><strong className="text-amber-400">Tip:</strong> For best results, aim for 150–250 words using complex sentence structures and varied vocabulary.</span>
-            </div>
-          </div>
-        )}
-
-        {/* Prompt Selector */}
-        <div className="border border-zinc-800 bg-zinc-900/20 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Practice Prompts</span>
-            <div className="flex gap-2">
+        {/* Task Selector & Countdown Timer */}
+        <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl p-6 space-y-4 backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-3">
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">IELTS Writing Prompts</span>
+            <div className="flex flex-wrap gap-2">
               {prompts.map((p, idx) => (
                 <button
                   key={p.id}
@@ -281,128 +296,205 @@ export default function WritingClient({
                     setEssayText("");
                     setActiveMistake(null);
                   }}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                     activePromptIndex === idx
-                      ? "border-purple-500 bg-purple-950/10 text-purple-300"
-                      : "border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                      ? "border-purple-500 bg-purple-950/30 text-purple-300 shadow-md shadow-purple-950/20"
+                      : "border-zinc-800 text-zinc-400 hover:border-zinc-700 bg-zinc-950/40"
                   }`}
                 >
-                  Prompt {idx + 1}
+                  {p.taskLabel || `Task ${idx + 1}`}
                 </button>
               ))}
             </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-white mb-1">{activePrompt.title}</h3>
-            <p className="text-zinc-400 text-xs leading-relaxed">{activePrompt.description}</p>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 text-[10px] font-bold uppercase tracking-wider">
+                {activePrompt.taskLabel || "Task 2"}
+              </span>
+              <span className="text-[10px] text-zinc-500 font-mono">Target: {targetWords}+ words</span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-white leading-snug">{activePrompt.title}</h3>
+            <p className="text-zinc-300 text-xs leading-relaxed">{activePrompt.description}</p>
+            {activePrompt.guidance && (
+              <p className="text-purple-400/80 text-[11px] italic mt-1">{activePrompt.guidance}</p>
+            )}
+          </div>
+
+          {/* Exam Countdown Bar */}
+          <div className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-zinc-950/50 border border-zinc-800 text-xs">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-purple-400" />
+              <span className="text-zinc-400 font-medium">Exam Timer:</span>
+              <span className={`font-mono font-bold text-sm ${timeLeftSeconds <= 300 ? "text-red-400 animate-pulse" : "text-white"}`}>
+                {formatTimer(timeLeftSeconds)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setTimerActive(!timerActive)}
+                className="px-3 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold transition-all"
+              >
+                {timerActive ? "Pause" : timeLeftSeconds === targetMinutes * 60 ? "Start Timer" : "Resume"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTimerActive(false);
+                  setTimeLeftSeconds(targetMinutes * 60);
+                }}
+                className="p-1 rounded-lg border border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                title="Reset timer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Text Area */}
+        {/* Text Area with Live Word Target Progress */}
         <div className="space-y-4">
           <textarea
             value={essayText}
             onChange={(e) => setEssayText(e.target.value)}
             disabled={submitting}
-            rows={10}
-            placeholder={dict.writing.placeholder}
-            className="w-full p-6 bg-zinc-900/30 border border-zinc-800 rounded-3xl text-zinc-200 text-xs sm:text-sm focus:outline-none focus:border-purple-500 transition-all font-sans leading-relaxed custom-scrollbar"
+            rows={11}
+            placeholder={dict.writing.placeholder || "Type or paste your essay response here..."}
+            className="w-full p-6 bg-zinc-900/30 border border-zinc-800 rounded-3xl text-zinc-200 text-xs sm:text-sm focus:outline-none focus:border-purple-500 transition-all font-sans leading-relaxed custom-scrollbar shadow-inner"
           />
 
-          <div className="flex items-center justify-between text-xs text-zinc-500 font-semibold px-2">
-            <span>
-              Word Count:{" "}
-              <strong className={wordCount >= 150 ? "text-emerald-400" : wordCount >= 80 ? "text-amber-400" : "text-zinc-300"}>
-                {wordCount}
-              </strong>{" "}
-              words
-            </span>
-            <div className="flex items-center gap-3">
-              <span className={`${wordCount >= 150 ? "text-emerald-400" : "text-zinc-500"} text-[10px]`}>
-                {wordCount >= 150 ? "✓ Good length" : `${150 - wordCount} more for IELTS minimum`}
+          {/* Live Progress Bar for Word Count */}
+          <div className="space-y-2 p-4 rounded-2xl bg-zinc-900/20 border border-zinc-800/80">
+            <div className="flex items-center justify-between text-xs font-semibold">
+              <span className="text-zinc-400">
+                Word Count:{" "}
+                <strong className={wordCount >= targetWords ? "text-emerald-400 font-mono" : wordCount >= targetWords * 0.6 ? "text-amber-400 font-mono" : "text-white font-mono"}>
+                  {wordCount}
+                </strong>{" "}
+                / {targetWords} words
               </span>
-              <span className="italic text-zinc-600">Target: 150–250 words</span>
+              <span className={`text-[11px] font-bold ${wordCount >= targetWords ? "text-emerald-400" : "text-zinc-500"}`}>
+                {wordCount >= targetWords ? "✓ Target reached" : `${targetWords - wordCount} more required`}
+              </span>
+            </div>
+            <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-300 ${
+                  wordCount >= targetWords ? "bg-emerald-500" : wordCount >= targetWords * 0.6 ? "bg-amber-500" : "bg-purple-500"
+                }`}
+                style={{ width: `${Math.min(100, (wordCount / targetWords) * 100)}%` }}
+              />
             </div>
           </div>
 
           <button
             onClick={handleSubmit}
             disabled={submitting || wordCount < 5}
-            className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+            className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 text-sm hover:scale-[1.005]"
           >
             {submitting ? (
               <>
                 <RefreshCw className="h-4 w-4 animate-spin" />
-                {dict.writing.analyzing}
+                {dict.writing.analyzing || "Analyzing essay with AI examiner..."}
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                {dict.writing.submit}
+                {dict.writing.submit || "Submit Essay for AI Evaluation"}
               </>
             )}
           </button>
         </div>
 
-        {/* Inline Diagnostics (post-result) */}
+        {/* Post-result: Tab switcher between Inline Diagnostics and Side-by-Side Model Comparison */}
         {result && (
-          <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl overflow-hidden backdrop-blur">
-            {/* Section header */}
-            <button
-              onClick={() => setExpandedSection(expandedSection === "mistakes" ? null : "mistakes")}
-              className="w-full flex items-center justify-between p-5 sm:p-6 border-b border-zinc-800 hover:bg-zinc-900/20 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-red-400" />
-                <span className="text-sm font-bold text-zinc-200">Inline Grammar & Spelling Diagnostics</span>
-                {result.mistakes?.length > 0 && (
-                  <span className="px-2 py-0.5 bg-red-950/40 border border-red-500/20 rounded-full text-[10px] text-red-400 font-bold">
-                    {result.mistakes.length} issues
-                  </span>
-                )}
-              </div>
-              {expandedSection === "mistakes" ? (
-                <ChevronUp className="h-4 w-4 text-zinc-500" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-zinc-500" />
-              )}
-            </button>
+          <div className="space-y-4">
+            <div className="flex gap-3 border-b border-zinc-800 pb-2">
+              <button
+                onClick={() => setViewMode("diagnostics")}
+                className={`text-xs font-bold pb-2 border-b-2 transition-all flex items-center gap-1.5 ${
+                  viewMode === "diagnostics" ? "border-purple-500 text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                <AlertCircle className="h-3.5 w-3.5 text-red-400" />
+                Inline Diagnostics ({result.mistakes?.length || 0})
+              </button>
+              <button
+                onClick={() => setViewMode("comparison")}
+                className={`text-xs font-bold pb-2 border-b-2 transition-all flex items-center gap-1.5 ${
+                  viewMode === "comparison" ? "border-purple-500 text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5 text-emerald-400" />
+                Side-by-Side Model Answer
+              </button>
+            </div>
 
-            {expandedSection === "mistakes" && (
-              <div className="p-5 sm:p-6 space-y-4">
-                <p className="text-xs text-zinc-400">
-                  Click on any <span className="text-red-300 border-b border-red-500/60">underlined word</span> to see AI correction and explanation.
-                </p>
-                <div className="p-5 bg-zinc-950/40 rounded-2xl border border-zinc-800">
-                  {renderHighlightedEssay(essayText, result.mistakes)}
+            {viewMode === "diagnostics" ? (
+              <div className="border border-zinc-800 bg-zinc-900/30 rounded-3xl overflow-hidden backdrop-blur">
+                <div className="p-5 sm:p-6 space-y-4">
+                  <p className="text-xs text-zinc-400">
+                    Click on any <span className="text-red-300 border-b border-red-500/60">underlined error</span> to see AI grammatical analysis.
+                  </p>
+                  <div className="p-5 bg-zinc-950/40 rounded-2xl border border-zinc-800">
+                    {renderHighlightedEssay(essayText, result.mistakes)}
+                  </div>
+
+                  {activeMistake && (
+                    <div className="p-5 rounded-2xl bg-red-950/10 border border-red-500/20 space-y-3 animate-fadeIn">
+                      <span className="text-xs font-bold text-red-400 flex items-center gap-1.5">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        Grammar Correction
+                      </span>
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div className="space-y-1">
+                          <span className="text-zinc-500 font-semibold block text-[10px] uppercase tracking-wider">Original</span>
+                          <div className="p-2.5 rounded-lg bg-red-950/20 border border-red-500/20">
+                            <span className="text-red-300 font-bold line-through">{activeMistake.originalText}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-zinc-500 font-semibold block text-[10px] uppercase tracking-wider">Correction</span>
+                          <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/20">
+                            <span className="text-emerald-400 font-bold">{activeMistake.improvedText}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t border-zinc-800/60">
+                        <span className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider block mb-1">Examiner Explanation</span>
+                        <p className="text-zinc-300 text-xs leading-relaxed">{activeMistake.explanation}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Side-by-Side Model Comparison */
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border border-zinc-800 bg-zinc-900/30 rounded-2xl p-5 space-y-3">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Your Submission</span>
+                  <div className="p-4 rounded-xl bg-zinc-950/40 border border-zinc-800 text-zinc-300 text-xs leading-relaxed max-h-[300px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">
+                    {essayText}
+                  </div>
                 </div>
 
-                {activeMistake && (
-                  <div className="p-5 rounded-2xl bg-red-950/10 border border-red-500/20 space-y-3 animate-fadeIn">
-                    <span className="text-xs font-bold text-red-400 flex items-center gap-1.5">
-                      <AlertCircle className="h-3.5 w-3.5" />
-                      Grammar Correction
-                    </span>
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div className="space-y-1">
-                        <span className="text-zinc-500 font-semibold block text-[10px] uppercase tracking-wider">Original</span>
-                        <div className="p-2.5 rounded-lg bg-red-950/20 border border-red-500/20">
-                          <span className="text-red-300 font-bold line-through">{activeMistake.originalText}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-zinc-500 font-semibold block text-[10px] uppercase tracking-wider">Correction</span>
-                        <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/20">
-                          <span className="text-emerald-400 font-bold">{activeMistake.improvedText}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-2 border-t border-zinc-800/60">
-                      <span className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider block mb-1">Examiner Explanation</span>
-                      <p className="text-zinc-300 text-xs leading-relaxed">{activeMistake.explanation}</p>
-                    </div>
+                <div className="border border-emerald-500/30 bg-emerald-950/10 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">IELTS Band 8.5 Model Answer</span>
+                    <button
+                      onClick={handleCopyModel}
+                      className="px-2.5 py-1 rounded-lg border border-emerald-500/30 text-emerald-300 text-[10px] font-bold flex items-center gap-1 hover:bg-emerald-950/40 transition-all"
+                    >
+                      {copiedModel ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                      {copiedModel ? "Copied" : "Copy"}
+                    </button>
                   </div>
-                )}
+                  <div className="p-4 rounded-xl bg-zinc-950/60 border border-emerald-500/20 text-zinc-200 text-xs leading-relaxed max-h-[300px] overflow-y-auto custom-scrollbar whitespace-pre-wrap">
+                    {result.improvedVersion}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -515,21 +607,6 @@ export default function WritingClient({
               </div>
             )}
 
-            {/* Model Answer */}
-            <div className="border border-emerald-500/20 bg-zinc-900/40 rounded-3xl p-5 space-y-3 backdrop-blur">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
-                {dict.writing.improvedVersion}
-                <span className="text-[10px] font-normal text-zinc-500 ml-auto border border-zinc-800 px-2 py-0.5 rounded-md">Model Answer</span>
-              </h3>
-              <div className="relative p-4 bg-emerald-950/10 border border-emerald-500/15 rounded-xl">
-                <FileText className="absolute top-3 right-3 h-3.5 w-3.5 text-emerald-600 opacity-40" />
-                <p className="text-zinc-300 text-xs leading-relaxed italic select-all">
-                  &ldquo;{result.improvedVersion}&rdquo;
-                </p>
-              </div>
-            </div>
-
           </div>
         ) : (
           /* Empty state with guidance */
@@ -544,7 +621,7 @@ export default function WritingClient({
               </p>
             </div>
             <div className="w-full space-y-2 text-left">
-              {["Band score across 4 criteria", "Inline grammar diagnostics", "Examiner commentary", "AI improvement suggestions", "Model answer"].map((item, i) => (
+              {["Band score across 4 criteria", "Inline grammar diagnostics", "Examiner commentary", "AI improvement suggestions", "Model answer comparison"].map((item, i) => (
                 <div key={i} className="flex items-center gap-2 text-[11px] text-zinc-600">
                   <Zap className="h-3 w-3 text-zinc-700 flex-shrink-0" />
                   {item}
@@ -558,3 +635,4 @@ export default function WritingClient({
     </div>
   );
 }
+

@@ -2,8 +2,14 @@
 
 import React, { useState } from "react";
 import { useAtom } from "jotai";
-import { reviewWordAction, getAIWordExplanationAction, searchOrGenerateWordAction, markWordAsCompletedAction } from "@/actions/practice";
-import { Sparkles, Star, Search, RefreshCw, Volume2, CheckCircle2, AlertCircle, Check, Loader2 } from "lucide-react";
+import { 
+  reviewWordAction, 
+  getAIWordExplanationAction, 
+  searchOrGenerateWordAction, 
+  markWordAsCompletedAction,
+  toggleFavoriteWordAction
+} from "@/actions/practice";
+import { Sparkles, Star, Search, RefreshCw, Volume2, CheckCircle2, AlertCircle, Check, Loader2, Globe } from "lucide-react";
 import {
   vocabActiveTabAtom,
   vocabCurrentIndexAtom,
@@ -56,6 +62,7 @@ export default function VocabularyClient({
   preferredLang: string;
   suggestedWords?: SuggestedWord[];
   targetBandRange?: string;
+  vocabulary?: any[];
 }) {
   const [mounted, setMounted] = useState(false);
   React.useEffect(() => {
@@ -63,12 +70,15 @@ export default function VocabularyClient({
   }, []);
 
   const [activeTab, setActiveTab] = useAtom(vocabActiveTabAtom);
+  const [accent, setAccent] = useState<"en-GB" | "en-US">("en-GB");
+  const [filterDifficulty, setFilterDifficulty] = useState<"all" | "favorites" | "band-high" | "band-mid">("all");
   const [localWords, setLocalWords] = useState<WordData[]>(words);
   const [reviewList, setReviewList] = useState<WordData[]>(
     words.filter(w => new Date(w.nextReviewDate).getTime() <= Date.now() + 60000)
   );
   const [currentIndex, setCurrentIndex] = useAtom(vocabCurrentIndexAtom);
   const [flipped, setFlipped] = useAtom(vocabFlippedAtom);
+
   
   // Suggested Vocabulary States
   const [localSuggestedWords, setLocalSuggestedWords] = useState<SuggestedWord[]>(suggestedWords);
@@ -188,9 +198,27 @@ export default function VocabularyClient({
 
   const handleTTS = (text: string) => {
     if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-US";
+      utterance.lang = accent;
+      utterance.rate = 0.9;
       window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const handleToggleFavorite = async (progressId: string, currentStatus: boolean, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      const nextStatus = !currentStatus;
+      setLocalWords(prev =>
+        prev.map(w => w.progressId === progressId ? { ...w, isFavorite: nextStatus } : w)
+      );
+      setReviewList(prev =>
+        prev.map(w => w.progressId === progressId ? { ...w, isFavorite: nextStatus } : w)
+      );
+      await toggleFavoriteWordAction(progressId, nextStatus);
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
     }
   };
 
@@ -210,11 +238,17 @@ export default function VocabularyClient({
     }
   };
 
-  const filteredAllWords = localWords.filter(
-    (w) =>
+  const filteredAllWords = localWords.filter((w) => {
+    const matchesQuery = 
       w.word.toLowerCase().includes(displayQuery.toLowerCase()) ||
-      w.englishDefinition.toLowerCase().includes(displayQuery.toLowerCase())
-  );
+      w.englishDefinition.toLowerCase().includes(displayQuery.toLowerCase());
+    
+    if (!matchesQuery) return false;
+    if (filterDifficulty === "favorites") return w.isFavorite;
+    if (filterDifficulty === "band-high") return w.difficulty === "Advanced" || w.difficulty === "Expert" || w.difficulty === "Hard";
+    if (filterDifficulty === "band-mid") return w.difficulty === "Intermediate" || w.difficulty === "Medium";
+    return true;
+  });
 
   // Visible Suggested words slicing
   const completedSuggested = localSuggestedWords.filter(w => w.isCompleted);
@@ -223,43 +257,72 @@ export default function VocabularyClient({
 
   return (
     <div className="space-y-8">
-      {/* Dynamic Tab Selectors */}
-      <div className="flex flex-wrap gap-4 border-b border-zinc-800 pb-px">
-        <button
-          onClick={() => {
-            setActiveTab("suggested");
-            setAiExplanation("");
-          }}
-          className={`pb-4 text-sm font-bold border-b-2 transition-all px-1 flex items-center gap-2 ${
-            activeTab === "suggested"
-              ? "border-purple-500 text-white font-extrabold"
-              : "border-transparent text-zinc-400 hover:text-zinc-200"
-          }`}
-        >
-          <Sparkles className="h-4 w-4 text-purple-400" />
-          AI Suggested Vocabulary
-          <span className="text-[10px] bg-purple-950/60 border border-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full font-bold">
-            Band {targetBandRange}
+      {/* Dynamic Tab Selectors & Settings */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800 pb-3">
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => {
+              setActiveTab("suggested");
+              setAiExplanation("");
+            }}
+            className={`pb-2 text-sm font-bold border-b-2 transition-all px-1 flex items-center gap-2 ${
+              activeTab === "suggested"
+                ? "border-purple-500 text-white font-extrabold"
+                : "border-transparent text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            <Sparkles className="h-4 w-4 text-purple-400" />
+            AI Suggested Vocabulary
+            <span className="text-[10px] bg-purple-950/60 border border-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full font-bold">
+              Band {targetBandRange}
+            </span>
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("review");
+              setAiExplanation("");
+            }}
+            className={`pb-2 text-sm font-bold border-b-2 transition-all px-1 flex items-center gap-2 ${
+              activeTab === "review"
+                ? "border-purple-500 text-white font-extrabold"
+                : "border-transparent text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-zinc-400" />
+            Flashcard Review Deck
+            <span className="text-[10px] bg-zinc-800 border border-zinc-700 text-zinc-400 px-2 py-0.5 rounded-full font-bold">
+              {reviewList.length} due
+            </span>
+          </button>
+        </div>
+
+        {/* Accent Selector */}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-zinc-500 flex items-center gap-1 font-semibold">
+            <Globe className="h-3.5 w-3.5 text-zinc-400" />
+            Accent:
           </span>
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab("review");
-            setAiExplanation("");
-          }}
-          className={`pb-4 text-sm font-bold border-b-2 transition-all px-1 flex items-center gap-2 ${
-            activeTab === "review"
-              ? "border-purple-500 text-white font-extrabold"
-              : "border-transparent text-zinc-400 hover:text-zinc-200"
-          }`}
-        >
-          <RefreshCw className="h-3.5 w-3.5 text-zinc-400" />
-          Flashcard Review Deck
-          <span className="text-[10px] bg-zinc-800 border border-zinc-700 text-zinc-400 px-2 py-0.5 rounded-full font-bold">
-            {reviewList.length} due
-          </span>
-        </button>
+          <div className="flex bg-zinc-950 border border-zinc-800 rounded-xl p-1">
+            <button
+              onClick={() => setAccent("en-GB")}
+              className={`px-2.5 py-0.5 rounded-lg font-bold transition-all ${
+                accent === "en-GB" ? "bg-purple-600 text-white" : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              UK
+            </button>
+            <button
+              onClick={() => setAccent("en-US")}
+              className={`px-2.5 py-0.5 rounded-lg font-bold transition-all ${
+                accent === "en-US" ? "bg-purple-600 text-white" : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              US
+            </button>
+          </div>
+        </div>
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -283,7 +346,13 @@ export default function VocabularyClient({
                     <span className="px-2 py-0.5 rounded bg-zinc-800 text-[10px] uppercase font-bold text-zinc-400">
                       {activeWord.difficulty}
                     </span>
-                    <Star className="h-4 w-4 text-zinc-600 hover:text-amber-500 transition-colors" />
+                    <button
+                      onClick={(e) => handleToggleFavorite(activeWord.progressId, !!activeWord.isFavorite, e)}
+                      className="p-1 rounded-lg hover:bg-zinc-800 transition-colors"
+                      title={activeWord.isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+                    >
+                      <Star className={`h-4 w-4 transition-colors ${activeWord.isFavorite ? "text-amber-400 fill-amber-400" : "text-zinc-600 hover:text-amber-400"}`} />
+                    </button>
                   </div>
 
                   {/* Front Side */}
@@ -555,6 +624,28 @@ export default function VocabularyClient({
               </button>
             </div>
 
+            {/* Filter Pills */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {[
+                { id: "all", label: "All" },
+                { id: "favorites", label: "★ Starred" },
+                { id: "band-high", label: "Band 7.5+" },
+                { id: "band-mid", label: "Band 6.0–7.0" },
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilterDifficulty(f.id as any)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                    filterDifficulty === f.id
+                      ? "bg-purple-600 text-white shadow-sm"
+                      : "bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
             {displayQuery && (
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-zinc-500">Filtered by: &ldquo;{displayQuery}&rdquo;</span>
@@ -571,13 +662,31 @@ export default function VocabularyClient({
             )}
 
             {/* Word lists */}
-            <div className="border border-zinc-800 rounded-2xl overflow-hidden max-h-[200px] overflow-y-auto divide-y divide-zinc-800 custom-scrollbar bg-zinc-950/40">
+            <div className="border border-zinc-800 rounded-2xl overflow-hidden max-h-[220px] overflow-y-auto divide-y divide-zinc-800 custom-scrollbar bg-zinc-950/40">
               {filteredAllWords.length > 0 ? (
                 filteredAllWords.map((word) => (
                   <div key={word.progressId} className="p-3.5 hover:bg-zinc-900/30 transition-all space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-xs">{word.word}</span>
-                      <span className="text-[9px] text-zinc-500 font-mono">{word.ipa}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-white text-xs">{word.word}</span>
+                        <span className="text-[9px] text-zinc-500 font-mono">{word.ipa}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={(e) => handleTTS(word.word)}
+                          className="p-1 text-zinc-500 hover:text-zinc-300"
+                          title="Listen"
+                        >
+                          <Volume2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => handleToggleFavorite(word.progressId, !!word.isFavorite, e)}
+                          className="p-1"
+                          title={word.isFavorite ? "Unstar" : "Star"}
+                        >
+                          <Star className={`h-3.5 w-3.5 ${word.isFavorite ? "text-amber-400 fill-amber-400" : "text-zinc-600 hover:text-amber-400"}`} />
+                        </button>
+                      </div>
                     </div>
                     <p className="text-zinc-400 text-[10px] line-clamp-1">{word.englishDefinition}</p>
                     <div className="flex items-center justify-between text-[9px] pt-0.5">
@@ -588,7 +697,7 @@ export default function VocabularyClient({
                 ))
               ) : (
                 <div className="p-6 text-center text-zinc-500 text-xs">
-                  No matching words found.
+                  No matching words found for this filter.
                 </div>
               )}
             </div>
