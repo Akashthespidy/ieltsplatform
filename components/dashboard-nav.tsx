@@ -44,10 +44,10 @@ export function DashboardNav({
   const activeTitle = activeLink ? activeLink.label : "Dashboard";
 
   return (
-    <div className="flex min-h-screen bg-zinc-950 text-zinc-50 font-sans">
-      {/* ===================== Desktop Sidebar ===================== */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-zinc-900 bg-zinc-950 shrink-0 select-none fixed top-0 bottom-0 left-0 z-30">
-        <div className="p-6 border-b border-zinc-900 flex items-center justify-between">
+    <div className="flex min-h-screen bg-zinc-950 text-zinc-50 font-sans w-full">
+      {/* ===================== Left Desktop Sidebar ===================== */}
+      <aside className="hidden md:flex flex-col w-64 border-r border-zinc-900 bg-zinc-950 shrink-0 select-none sticky top-0 h-screen">
+        <div className="h-16 px-6 border-b border-zinc-900 flex items-center justify-between">
           <Link href={`/${lang}/dashboard`} className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-sm shadow-purple-500/20">
               <Globe className="h-4.5 w-4.5" />
@@ -93,12 +93,12 @@ export function DashboardNav({
         </div>
       </aside>
 
-      {/* ===================== Main Column (with desktop offset) ===================== */}
-      <div className="flex-1 flex flex-col min-w-0 md:pl-64 min-h-screen">
+      {/* ===================== Right Main Column ===================== */}
+      <div className="flex-1 flex flex-col min-w-0 w-full min-h-screen">
         
         {/* Top Header */}
-        <header className="h-16 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur px-4 sm:px-8 flex items-center justify-between z-20 sticky top-0">
-          {/* Left: Mobile hamburger / Desktop title */}
+        <header className="h-16 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur px-4 sm:px-8 flex items-center justify-between z-20 sticky top-0 w-full">
+          {/* Left: Mobile hamburger & title */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
