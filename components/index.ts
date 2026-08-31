@@ -6,4 +6,6 @@ export { default as ListeningClient } from "./listening-client";
 export { default as DashboardClient } from "./dashboard-client";
 export { default as SettingsClient } from "./settings-client";
 export { DashboardNav } from "./dashboard-nav";
+export { QuotaExceededClient } from "./quota-exceeded-client";
+
 
